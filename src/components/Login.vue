@@ -3,7 +3,7 @@ import Button from "primevue/button"; // 按钮组件需要引入
 import IftaLabel from "primevue/iftalabel";
 import InputText from "primevue/inputtext";
 import RadioButton from "primevue/radiobutton";
-import { ref } from "vue";
+import { ref, computed } from 'vue';
 import instance from "../http.js";
 import router from "../router/router";
 
@@ -11,6 +11,23 @@ import router from "../router/router";
 const Account = ref("");
 const password = ref("");
 const identity = ref("admin");
+const role = ref('admin'); // 默认身份为管理员
+const title = computed(() => {
+      switch (role.value) {
+        case 'admin':
+          return '管理员登录';
+        case 'doctor':
+          return '医生登录';
+        case 'patient':
+          return '病人登录';
+        default:
+          return '登录';
+      }
+    });
+
+const selectRole = (selectedRole) => {
+    role.value = selectedRole;
+    };
 
 // 校验函数：根据身份验证账号和密码长度
 const validateForm = () => {
@@ -39,13 +56,10 @@ async function try_login() {
   }
 
   let data = new FormData();
-//   data.append("account", Account.value);
-//   data.append("password", password.value);
-//   data.append("identity", identity.value); // 添加身份参数
+  data.append("account", Account.value);
+  data.append("password", password.value);
+  data.append("identity", identity.value); // 添加身份参数
 
-    data.append("account", "0123456789");
-    data.append("password", "123451234512345");
-    data.append("identity", identity.value); // 添加身份参数
 
 //   try {
 //     const apiPath =
@@ -76,6 +90,8 @@ async function try_login() {
 //     alert(error.message);
 //   }
 }
+
+
 </script>
 
 <template>
@@ -83,7 +99,7 @@ async function try_login() {
     <div class="screen">
       <div class="screen__content">
         <form class="login">
-          <h3 class="login_header">管理员登录</h3>
+          <h3 class="login_header">{{ title }}</h3>
 
           <div class="login__field">
             <IftaLabel>
@@ -110,6 +126,7 @@ async function try_login() {
             <div class="radio-item">
               <RadioButton
                 id="admin"
+                @click = "selectRole('admin')"
                 v-model="identity"
                 value="admin"
                 class="custom-radio"
@@ -119,13 +136,26 @@ async function try_login() {
             </div>
             <div class="radio-item">
               <RadioButton
-                id="merchant"
+                id="doctor"
+                @click = "selectRole('doctor')"
                 v-model="identity"
-                value="merchant"
+                value="doctor"
                 class="custom-radio"
                 variant="filled"
               />
-              <label for="merchant" class="radio-label">Merchant</label>
+              <label for="merchant" class="radio-label">Doctor</label>
+            </div>
+
+            <div class="radio-item">
+              <RadioButton
+                id="patient"
+                @click = "selectRole('patient')"
+                v-model="identity"
+                value="patient"
+                class="custom-radio"
+                variant="filled"
+              />
+              <label for="merchant" class="radio-label">Patient</label>
             </div>
           </div>
 
