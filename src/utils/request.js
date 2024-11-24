@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {showMessage} from "./message.js";
 
 const localHost = "http://127.0.0.1:5000"; // 本地URL
 
@@ -14,11 +15,11 @@ instance.interceptors.response.use(
     },
     (error) => {
         if (error.status === 504 || error.status === 404) {
-            console.log('服务器被吃了( ╯□╰ )504');
+            showMessage('服务器被吃了( ╯□╰ )504', 'error')
         } else if (error.status === 403) {
-            console.log('服务器被吃了( ╯□╰ )403');
+            showMessage('服务器被吃了( ╯□╰ )403', 'error')
         } else if (error.status === 401) {
-            console.log('401!!!!!!!');
+            showMessage('401!!!!!!!', 'error')
         } else {
             console.log(error);
         }

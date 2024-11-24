@@ -4,58 +4,39 @@ import Button from "primevue/button"; // 按钮组件
 import IftaLabel from "primevue/iftalabel"; // 标签组件
 import InputText from "primevue/inputtext"; // 输入框组件
 import RadioButton from "primevue/radiobutton"; // 单选按钮组件
+import {showMessage} from "../utils/message.js"
 
 import {ref} from "vue"; // Vue 的响应式变量
 import instance from "../utils/request.js"; // Axios 实例，用于发送 HTTP 请求
 import router from "../router/router";
-import {ElMessage} from "element-plus"; // 路由实例，用于页面跳转
 
 // 定义响应式变量，用于绑定表单数据
 const phone_number = ref(""); // 用户账号
 const password = ref(""); // 用户密码
 const identity = ref("admin"); // 身份，默认为管理员(admin)
-const errorMessage = ref(""); // 动态显示错误信息
 
 // 校验函数：检查账号和密码长度是否符合不同身份的要求
 const validateForm = () => {
-  if (identity.value === "admin") {
-    // 管理员身份的账号和密码要求
-    return (
-        Account.value.length >= 10 &&
-        Account.value.length <= 30 &&
-        password.value.length >= 15 &&
-        password.value.length <= 30
-    );
-  } else {
-    // 用户身份的账号和密码要求
-    return (
-        Account.value.length >= 6 &&
-        Account.value.length <= 30 &&
-        password.value.length >= 8 &&
-        password.value.length <= 30
-    );
-  }
-};
 
-// 获取账号和密码长度要求的动态提示
-const getValidationHint = () => {
-  if (identity.value === "admin") {
-    return "管理员账号需为 10-30 字符，密码需为 15-30 字符";
-  } else {
-    return "用户账号需为 6-30 字符，密码需为 8-30 字符";
+  if (!phone_number.value || !password.value) {
+    showMessage("账号和密码不能为空", "warning");
+    return false;
   }
-};
+  // TODO: 其他的限制
 
-// 处理错误消息
-const handleError = (message: string) => {
-  errorMessage.value = message;
-  setTimeout(() => (errorMessage.value = ""), 3000); // 3 秒后清除错误消息
+  return true;
 };
 
 // 登录函数：向服务器发送登录请求并跳转到对应的页面
 async function try_login(event: Event) {
   event.preventDefault(); // 防止表单默认提交行为
 
+  // 验证表单数据
+  if (!validateForm()) {
+    return; // 验证失败，不继续执行
+  }
+
+  // 组织请求数据
   const data = {
     phone_number: phone_number.value, // 替换为实际的账号字段
     password: password.value,         // 替换为实际的密码字段
@@ -73,29 +54,16 @@ async function try_login(event: Event) {
     const {code, message, userData} = response.data;
 
     if (code === "000") {
-      // 显示成功消息
-      ElMessage({
-        message: "登录成功!欢迎回来!",
-        type: "success",
-        duration: 3000,
-      })
+      // 显示成功信息
+      showMessage(message, "success");
       // TODO:在这里处理成功逻辑，比如跳转页面
-
     } else {
       // 显示错误消息
-      ElMessage({
-        message: message || "登录失败，请检查账号或密码。",
-        type: "error",
-        duration: 3000,
-      });
+      showMessage(message || "登录失败", "error");
     }
   } catch (error) {
     // 显示网络错误消息
-    ElMessage({
-      message: "网络错误，请稍后重试。",
-      type: "error",
-      duration: 3000,
-    });
+    showMessage("网络错误，请稍后再试", "error");
   }
 }
 </script>
@@ -165,9 +133,6 @@ async function try_login(event: Event) {
               <label for="merchant" class="radio-label">商家</label>
             </div>
           </div>
-
-          <!-- 提示信息 -->
-          <p class="validation-hint">{{ getValidationHint() }}</p>
 
           <!-- 登录按钮 -->
           <Button
