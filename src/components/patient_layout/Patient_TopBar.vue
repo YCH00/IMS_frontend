@@ -9,7 +9,7 @@
                 <i class="pi pi-bars"></i>
             </button>
 
-            <span>欢迎管理员</span>
+            <span>Welcome the Merchant</span>
         </div>
 
         <div class="layout-topbar-actions">
@@ -27,7 +27,7 @@
                     </button>
                 </div>
             </div>
-
+            
         </div>
     </div>
 </template>

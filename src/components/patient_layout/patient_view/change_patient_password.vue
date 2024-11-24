@@ -1,24 +1,22 @@
 <script setup lang="ts">
-import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
-import {ref} from 'vue';
-import instance from '../../../utils/request.js';
-import router from '../../../router/router';
-
+import Button from "primevue/button";
+import Dialog from "primevue/dialog";
+import { ref } from "vue";
+import instance from "../../../http.js";
+import router from "../../../router/router.js";
 
 let visible = ref(false);
 
-
 const pwdModel = ref({
-  new_pwd: '',
-  con_pwd: ''
-})
+  new_pwd: "",
+  con_pwd: "",
+});
 
 async function logout() {
-  const response = await instance.post(`/admin/logout`);
+  const response = await instance.post(`merchant/logout`);
   if (response.status === 200) {
     if (response.data.msg === "ok") {
-      router.push('/');
+      router.push("/login");
     } else {
       alert(response.data.msg);
     }
@@ -27,14 +25,11 @@ async function logout() {
   }
 }
 
-
 async function change_pwd() {
-
-  if (pwdModel.value.new_pwd.length > 30 || pwdModel.value.new_pwd.length < 15) {
+  if (pwdModel.value.new_pwd.length > 30 || pwdModel.value.new_pwd.length < 8) {
     alert("密码长度错误");
     return;
   }
-
 
   if (pwdModel.value.new_pwd != pwdModel.value.con_pwd)
     alert("两次密码输入不一致，请重新输入");
@@ -43,11 +38,11 @@ async function change_pwd() {
     data.append("password", pwdModel.value.new_pwd);
 
     try {
-      const response = await instance.put('/admin/change-password', data);
+      const response = await instance.put("/merchant/change-password", data);
       if (response.status === 200) {
         if (response.data.msg === "ok") {
           alert("修改密码成功");
-          router.push('/');
+          router.push("/login");
         } else {
           alert(response.data.msg);
         }
@@ -61,37 +56,60 @@ async function change_pwd() {
 }
 </script>
 
-
 <template>
-  <Button label="Change Password" icon="pi pi-user" @click="visible = true"/>
+  <div class="centered-button-container">
+    <Button label="Change Password" icon="pi pi-user" @click="visible = true" />
+    <Button label="Logout" icon="pi pi-ban" @click="logout" />
+  </div>
+
   <Dialog v-model:visible="visible" class="custom-dialog">
     <template #container="{ closeCallback }">
       <div class="dialog-container">
         <div class="input-group">
           <label for="new_pwd" class="label">New Password</label>
-          <InputText id="new_pwd" type="password" class="input-text" v-model="pwdModel.new_pwd"/>
+          <InputText
+            id="new_pwd"
+            type="password"
+            class="input-text"
+            v-model="pwdModel.new_pwd"
+          />
         </div>
         <div class="input-group">
           <label for="con_pwd" class="label">Confirm New Password</label>
-          <InputText id="con_pwd" type="password" class="input-text" v-model="pwdModel.con_pwd"/>
+          <InputText
+            id="con_pwd"
+            type="password"
+            class="input-text"
+            v-model="pwdModel.con_pwd"
+          />
         </div>
         <div class="button-group">
-          <Button label="Cancel" @click="closeCallback" class="button cancel-button"/>
-          <Button label="Submit" @click="change_pwd" class="button sign-in-button"/>
+          <Button
+            label="Cancel"
+            @click="closeCallback"
+            class="button cancel-button"
+          />
+          <Button
+            label="Submit"
+            @click="change_pwd"
+            class="button sign-in-button"
+          />
         </div>
       </div>
     </template>
   </Dialog>
-
-  <br>
-  <br>
-
-  <Button label="Logout" icon="pi pi-ban" @click="logout"/>
-
-
 </template>
 
 <style scoped>
+/* Centered button container */
+.centered-button-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* Existing dialog styles */
 .content {
   margin: 10px;
   display: inline-block;
@@ -101,7 +119,6 @@ async function change_pwd() {
   border: none;
   background-color: rgba(0, 0, 0, 0.8); /* 半透明黑色背景 */
 }
-
 .custom-dialog .p-dialog-mask {
   backdrop-filter: blur(4px);
 }
@@ -113,7 +130,7 @@ async function change_pwd() {
   gap: 1.5rem;
   padding: 2rem;
   border-radius: 1rem;
-  background-image: linear-gradient(90deg, #C7C5F4, #776BCC);;
+  background-image: linear-gradient(90deg, #c7c5f4, #776bcc);
 }
 
 /* 输入框组样式 */
@@ -160,12 +177,11 @@ async function change_pwd() {
 
 /* 特定按钮样式 */
 .cancel-button {
-  color: #776BCC; /* 浅灰色文本 */
+  color: #776bcc; /* 浅灰色文本 */
   background-color: #ffffff;
 }
-
 .sign-in-button {
-  color: #776BCC; /* 浅灰色文本 */
+  color: #776bcc; /* 浅灰色文本 */
   background-color: #ffffff;
 }
 </style>

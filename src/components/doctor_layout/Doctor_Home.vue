@@ -1,6 +1,6 @@
 <script setup>
-    import AppTopBar from './Merchant_TopBar.vue';
-    import AppSideBar from './Merchant_SideBar.vue';
+    import AppTopBar from './Doctor_TopBar.vue';
+    import AppSideBar from './Doctor_SideBar.vue';
 </script>
 
 <template>
