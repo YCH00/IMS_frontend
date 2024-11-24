@@ -1,16 +1,9 @@
 import {createRouter, createWebHistory} from 'vue-router';
 import Login from '../components/Login.vue';
-<<<<<<< HEAD
-import Admin_Home from '../components/admin_layout/Home.vue';
-import Merchant_Home from '../components/merchant_layout/Merchant_Home.vue';
-import instance from '../utils/request.js';
-=======
 import Admin_Home from '../components/admin_layout/Admin_Home.vue';
 import Doctor_Home from '../components/doctor_layout/Doctor_Home.vue';
 import Patient_Home from '../components/patient_layout/Patient_Home.vue';
-import instance from '../http.js';
->>>>>>> main
-
+import instance from '../utils/request.js';
 // 定义路由规则
 const routes = [
     // 注册界面
@@ -129,28 +122,19 @@ router.beforeEach(async (to, from, next) => {
         try {
             // 检查管理员和商家登录状态
             const admin_login_response = await instance.get("/admin/login-status");
-<<<<<<< HEAD
-            const user_login_response = await instance.get("/user/login-status");
-=======
             const doctor_login_response = await instance.get("/merchant/login-status");
             const patient_login_response = await instance.get("/patient/login-status");
->>>>>>> main
 
             // 如果管理员已经登录，跳转到管理员首页
             if (admin_login_response.status === 200) {
                 return next('/admin_home');
             }
             // 如果商家已经登录，跳转到商家首页
-<<<<<<< HEAD
-            else if (user_login_response.status === 200) {
-                return next('/Home');
-=======
             else if (doctor_login_response.status === 200) {
                 return next('/doctor_home');
             }
             else if (patient_login_response.status === 200) {
                 return next('/patient_home');
->>>>>>> main
             }
             // 未登录，继续访问登录页面
             else {
@@ -179,13 +163,8 @@ router.beforeEach(async (to, from, next) => {
         }
     }
 
-<<<<<<< HEAD
-    // 如果访问商家主页面
-    else if (to.path.startsWith('/Home')) {
-=======
     // 如果目标路径是 '/doctor_home' 页面
     else if (to.path.startsWith('/doctor_home')) {
->>>>>>> main
         console.log("进入判断");
         try {
             const response = await instance.get("/doctor/login-status");
@@ -203,29 +182,7 @@ router.beforeEach(async (to, from, next) => {
         }
     }
 
-<<<<<<< HEAD
     // 对其他路径，直接调用 next() 继续导航
-=======
-    else if (to.path.startsWith('/patient_home')){
-        console.log("进入判断");
-        try{
-            const response = await instance.get("/patient/login-status");
-
-            if(response.status !== 200){
-                return next('/login');
-            }
-            else{
-                console.log("跳转成功");
-                return next();
-            }
-        } catch(error) {
-            console.error('请求失败:', error);
-            return next('/login');
-        }
-    }
-
-    // 对于其他路径，直接调用 next() 继续
->>>>>>> main
     return next();
 });
 
