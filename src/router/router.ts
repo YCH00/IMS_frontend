@@ -1,7 +1,7 @@
 import {createRouter, createWebHistory} from 'vue-router';
-import Login from '../components/Login.vue';
+import Login from '../views/Login.vue';
 import Register from "../views/Register.vue";
-import Admin_Home from '../components/admin_layout/Home.vue';
+import Admin_Home from '../components/admin_layout/Admin_Home.vue';
 import instance from '../utils/request.js';
 
 // 定义路由规则
@@ -23,27 +23,27 @@ const routes = [
         children: [
             {
                 path: '',
-                component: () => import('../components/admin_layout/manager_views/index.vue')
+                component: () => import('../components/admin_layout/manager_view/index.vue')
             },
             {
                 path: 'index',
-                component: () => import('../components/admin_layout/manager_views/index.vue')
+                component: () => import('../components/admin_layout/manager_view/index.vue')
             },
             {
                 path: 'change_password',
-                component: () => import('../components/admin_layout/manager_views/change_password.vue')
+                component: () => import('../components/admin_layout/manager_view/change_password.vue')
             },
             {
                 path: 'create_merchants',
-                component: () => import('../components/admin_layout/manager_views/create_merchants.vue')
+                component: () => import('../components/admin_layout/manager_view/create_merchants.vue')
             },
             {
                 path: 'delete_merchants',
-                component: () => import('../components/admin_layout/manager_views/delete_merchants.vue')
+                component: () => import('../components/admin_layout/manager_view/delete_merchants.vue')
             },
             {
                 path: 'applications/:page',
-                component: () => import('../components/admin_layout/manager_views/applications.vue')
+                component: () => import('../components/admin_layout/manager_view/applications.vue')
             },
         ]
     },
