@@ -1,14 +1,23 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import {createRouter, createWebHistory} from 'vue-router';
 import Login from '../components/Login.vue';
 import Admin_Home from '../components/admin_layout/Home.vue';
 import Merchant_Home from '../components/merchant_layout/Merchant_Home.vue';
-import instance from '../http.js';
+import instance from '../utils/request.js';
 
+// 定义路由规则
 const routes = [
+    // 注册界面
     {
+        path: '/register',
+        component: () => import('../components/Register.vue') // 注册页面组件
+    },
+    // 登录界面
+    {
+
         path: '/login',
         component: Login
     },
+    // 管理员主页面
     {
         path: '/admin_home',
         component: Admin_Home,
@@ -39,6 +48,7 @@ const routes = [
             },
         ]
     },
+    // 商家主页面
     {
         path: '/merchant_home',
         component: Merchant_Home,
@@ -63,40 +73,44 @@ const routes = [
             }
         ]
     },
+    // 捕获所有未匹配的路径并重定向到登录页面
     {
         path: '/:catchAll(.*)',
         redirect: '/login'
     }
 ]
 
+// 创建路由实例
 const router = createRouter({
-    history: createWebHistory(),
-    routes,
+    history: createWebHistory(), // 使用 HTML5 模式的路由
+    routes, // 路由规则
 });
 
+// 设置全局导航守卫
 router.beforeEach(async (to, from, next) => {
     console.log('进入导航守卫');
-    console.log(to);
-    console.log(from);
-    
-    // 如果目标路径是 '/login' 页面
-    if (to.path === '/login') {
-        console.log('守卫进入login');
+    console.log(to); // 打印目标路由信息
+    console.log(from); // 打印来源路由信息
+
+    // 如果访问登录页面
+    if (to.path === '/login' || to.path === '/register') {
+        console.log(`守卫进入${to.path}`);
         try {
+            // 检查管理员和商家登录状态
             const admin_login_response = await instance.get("/admin/login-status");
-            const merchant_login_response = await instance.get("/merchant/login-status");
+            const user_login_response = await instance.get("/user/login-status");
 
             // 如果管理员已经登录，跳转到管理员首页
             if (admin_login_response.status === 200) {
                 return next('/admin_home');
             }
             // 如果商家已经登录，跳转到商家首页
-            else if (merchant_login_response.status === 200) {
-                return next('/merchant_home');
+            else if (user_login_response.status === 200) {
+                return next('/Home');
             }
-            // 如果都没有登录，继续访问 login 页面
+            // 未登录，继续访问登录页面
             else {
-                return next(); // 继续访问 login 页面
+                return next();
             }
         } catch (err) {
             console.error('请求失败:', err);
@@ -104,7 +118,7 @@ router.beforeEach(async (to, from, next) => {
         }
     }
 
-    // 如果目标路径是 '/admin_home' 页面
+    // 如果访问管理员主页面
     else if (to.path === '/admin_home') {
         try {
             const response = await instance.get("/admin/login-status");
@@ -121,8 +135,8 @@ router.beforeEach(async (to, from, next) => {
         }
     }
 
-    // 如果目标路径是 '/merchant_home' 页面
-    else if (to.path.startsWith('/merchant_home')) {
+    // 如果访问商家主页面
+    else if (to.path.startsWith('/Home')) {
         console.log("进入判断");
         try {
             const response = await instance.get("/merchant/login-status");
@@ -140,7 +154,7 @@ router.beforeEach(async (to, from, next) => {
         }
     }
 
-    // 对于其他路径，直接调用 next() 继续
+    // 对其他路径，直接调用 next() 继续导航
     return next();
 });
 

@@ -3,9 +3,9 @@ import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
 import Dialog from "primevue/dialog";
-import { useToast } from "primevue/usetoast"; // 引入 useToast
-import { computed, onMounted, ref } from "vue";
-import instance from "../../../http.js"; // 假设这是你的 HTTP 实例
+import {useToast} from "primevue/usetoast"; // 引入 useToast
+import {computed, onMounted, ref} from "vue";
+import instance from "../../../utils/request.js"; // 假设这是你的 HTTP 实例
 import router from "../../../router/router.js";
 
 interface Restaurant {
@@ -48,7 +48,7 @@ const formatDate = (timestamp: number): string => {
 const GetRestaurantStatus = async (restaurantId: number): Promise<number> => {
   try {
     const response = await instance.get(
-      `merchant/restaurant/${restaurantId}/status`
+        `merchant/restaurant/${restaurantId}/status`
     );
     if (response.data.ecode === 200) {
       console.log(response.data);
@@ -74,16 +74,16 @@ const fetchRestaurants = async () => {
       restaurants.value.forEach((restaurant) => {
         // 将分处理成元
         restaurant.minimum_delivery_amount = parseFloat(
-          (restaurant.minimum_delivery_amount / 100).toFixed(2)
+            (restaurant.minimum_delivery_amount / 100).toFixed(2)
         );
         // 将 restaurant 的状态赋初值
         GetRestaurantStatus(restaurant.id)
-          .then((status) => {
-            restaurant.status = status;
-          })
-          .catch((error) => {
-            console.error("Failed to get restaurant status:", error);
-          });
+            .then((status) => {
+              restaurant.status = status;
+            })
+            .catch((error) => {
+              console.error("Failed to get restaurant status:", error);
+            });
       });
     } else {
       console.error("No restaurants data found in response:", response.data);
@@ -103,8 +103,8 @@ const createRestaurant = async () => {
   data.append("description", newRestaurant.value.description);
   // 将 minimum_delivery_amount 转换为字符串
   data.append(
-    "minimum_delivery_amount",
-    (newRestaurant.value.minimum_delivery_amount * 100).toString()
+      "minimum_delivery_amount",
+      (newRestaurant.value.minimum_delivery_amount * 100).toString()
   );
   console.log(data);
   try {
@@ -142,7 +142,7 @@ const createRestaurant = async () => {
 const deleteRestaurant = async (restaurantId: number) => {
   try {
     const response = await instance.delete(
-      `merchant/restaurant/${restaurantId}`
+        `merchant/restaurant/${restaurantId}`
     );
 
     if (response.data.ecode === 200) {
@@ -181,14 +181,14 @@ const updateRestaurant = async () => {
     data.append("address", editingRestaurant.value.address);
     data.append("description", editingRestaurant.value.description);
     data.append(
-      "minimum_delivery_amount",
-      (editingRestaurant.value.minimum_delivery_amount * 100).toString()
+        "minimum_delivery_amount",
+        (editingRestaurant.value.minimum_delivery_amount * 100).toString()
     );
 
     try {
       const response = await instance.put(
-        `merchant/restaurant/${editingRestaurant.value.id}`,
-        data
+          `merchant/restaurant/${editingRestaurant.value.id}`,
+          data
       );
 
       if (response.data.ecode === 200) {
@@ -233,7 +233,7 @@ const filteredRestaurants = computed(() => {
   }
   // 过滤餐厅列表，仅返回包含查询关键字的餐厅
   return restaurants.value.filter((restaurant) =>
-    restaurant.restaurant_name.includes(searchQuery.value)
+      restaurant.restaurant_name.includes(searchQuery.value)
   );
 });
 
@@ -264,7 +264,7 @@ const toggleRestaurantStatus = async (restaurant) => {
     console.log(newStatus)
     // 更新状态的 API 请求
     const response = await instance.put(
-      `merchant/restaurant/${restaurant.id}/status/${newStatus}`
+        `merchant/restaurant/${restaurant.id}/status/${newStatus}`
     );
 
     if (response.data.ecode === 200) {
@@ -310,7 +310,7 @@ const openCreateDialog = () => {
 
 // 打开编辑餐厅弹窗
 const openEditDialog = (restaurant: Restaurant) => {
-  editingRestaurant.value = { ...restaurant };
+  editingRestaurant.value = {...restaurant};
   visible.value = true;
 };
 
@@ -335,40 +335,40 @@ onMounted(fetchRestaurants);
 <template>
   <div>
     <!-- 添加 Toast 组件以展示消息 -->
-    <Toast />
+    <Toast/>
 
     <div class="action-bar">
       <!-- 查询输入框和查询按钮 -->
       <div class="search-group">
         <input
-          v-model="searchQuery"
-          placeholder="查询餐厅名称"
-          class="input-field search-input"
+            v-model="searchQuery"
+            placeholder="查询餐厅名称"
+            class="input-field search-input"
         />
         <Button
-          label="查询"
-          icon="pi pi-search"
-          class="p-button-primary search-button"
-          @click="searchRestaurants"
+            label="查询"
+            icon="pi pi-search"
+            class="p-button-primary search-button"
+            @click="searchRestaurants"
         />
       </div>
 
       <!-- 新建餐厅按钮 -->
       <Button
-        label="新建餐厅"
-        icon="pi pi-plus"
-        @click="openCreateDialog"
-        class="p-button-success new-restaurant-button"
+          label="新建餐厅"
+          icon="pi pi-plus"
+          @click="openCreateDialog"
+          class="p-button-success new-restaurant-button"
       />
     </div>
 
     <DataTable
-      :value="filteredRestaurants"
-      dataKey="id"
-      responsiveLayout="scroll"
+        :value="filteredRestaurants"
+        dataKey="id"
+        responsiveLayout="scroll"
     >
-      <Column field="restaurant_name" header="餐厅名称" />
-      <Column field="address" header="地址" />
+      <Column field="restaurant_name" header="餐厅名称"/>
+      <Column field="address" header="地址"/>
       <Column header="描述">
         <template #body="slotProps">
           <div>
@@ -379,17 +379,17 @@ onMounted(fetchRestaurants);
               {{ slotProps.data.description }}
             </span>
             <Button
-              v-if="slotProps.data.description.length > 10"
-              label="查看"
-              icon="pi pi-eye"
-              class="p-button-text p-button-info"
-              @click="showFullDescription(slotProps.data.description)"
+                v-if="slotProps.data.description.length > 10"
+                label="查看"
+                icon="pi pi-eye"
+                class="p-button-text p-button-info"
+                @click="showFullDescription(slotProps.data.description)"
             />
           </div>
         </template>
       </Column>
-      <Column field="minimum_delivery_amount" header="最低配送金额（元）" />
-      <Column field="rating" header="评分" />
+      <Column field="minimum_delivery_amount" header="最低配送金额（元）"/>
+      <Column field="rating" header="评分"/>
       <Column header="创建时间">
         <template #body="slotProps">
           {{ formatDate(slotProps.data.created_at) }}
@@ -406,46 +406,46 @@ onMounted(fetchRestaurants);
         <template #body="slotProps">
           <!-- 开关餐厅按钮 -->
           <Button
-            :label="
+              :label="
               slotProps.data.status === 1
                 ? '关闭餐厅'
                 : slotProps.data.status === 0
                 ? '开启餐厅'
                 : '不可更改'
             "
-            :icon="
+              :icon="
               slotProps.data.status === 1
                 ? 'pi pi-times'
                 : slotProps.data.status === 0
                 ? 'pi pi-check'
                 : 'pi pi-ban'
             "
-            class="p-button-text"
-            :class="
+              class="p-button-text"
+              :class="
               slotProps.data.status === 1
                 ? 'p-button-danger'
                 : slotProps.data.status === 0
                 ? 'p-button-success'
                 : 'p-button-secondary'
             "
-            :disabled="slotProps.data.status === -1"
-            @click="() => toggleRestaurantStatus(slotProps.data)"
+              :disabled="slotProps.data.status === -1"
+              @click="() => toggleRestaurantStatus(slotProps.data)"
           />
           <Button
-            icon="pi pi-pencil"
-            class="p-button-text"
-            @click="() => openEditDialog(slotProps.data)"
+              icon="pi pi-pencil"
+              class="p-button-text"
+              @click="() => openEditDialog(slotProps.data)"
           />
           <Button
-            icon="pi pi-trash"
-            class="p-button-text p-button-danger"
-            @click="() => deleteRestaurant(slotProps.data.id)"
+              icon="pi pi-trash"
+              class="p-button-text p-button-danger"
+              @click="() => deleteRestaurant(slotProps.data.id)"
           />
           <Button
-            label="进入餐厅"
-            icon="pi pi-sign-in"
-            class="p-button-text p-button-info"
-            @click="() => enterRestaurant(slotProps.data.id)"
+              label="进入餐厅"
+              icon="pi pi-sign-in"
+              class="p-button-text p-button-info"
+              @click="() => enterRestaurant(slotProps.data.id)"
           />
         </template>
       </Column>
@@ -455,83 +455,83 @@ onMounted(fetchRestaurants);
         <div v-if="editingRestaurant">
           <label for="restaurant_name">餐厅名称</label>
           <input
-            v-model="editingRestaurant.restaurant_name"
-            id="restaurant_name"
-            type="text"
-            class="input-field"
+              v-model="editingRestaurant.restaurant_name"
+              id="restaurant_name"
+              type="text"
+              class="input-field"
           />
 
           <label for="address">地址</label>
           <input
-            v-model="editingRestaurant.address"
-            id="address"
-            type="text"
-            class="input-field"
+              v-model="editingRestaurant.address"
+              id="address"
+              type="text"
+              class="input-field"
           />
 
           <label for="description">描述</label>
           <input
-            v-model="editingRestaurant.description"
-            id="description"
-            type="text"
-            class="input-field"
+              v-model="editingRestaurant.description"
+              id="description"
+              type="text"
+              class="input-field"
           />
 
           <label for="minimum_delivery_amount">最低配送金额</label>
           <input
-            v-model="editingRestaurant.minimum_delivery_amount"
-            id="minimum_delivery_amount"
-            type="number"
-            class="input-field"
+              v-model="editingRestaurant.minimum_delivery_amount"
+              id="minimum_delivery_amount"
+              type="number"
+              class="input-field"
           />
         </div>
 
         <div v-else>
           <label for="restaurant_name">餐厅名称</label>
           <input
-            v-model="newRestaurant.restaurant_name"
-            id="restaurant_name"
-            type="text"
-            class="input-field"
+              v-model="newRestaurant.restaurant_name"
+              id="restaurant_name"
+              type="text"
+              class="input-field"
           />
 
           <label for="address">地址</label>
           <input
-            v-model="newRestaurant.address"
-            id="address"
-            type="text"
-            class="input-field"
+              v-model="newRestaurant.address"
+              id="address"
+              type="text"
+              class="input-field"
           />
 
           <label for="description">描述</label>
           <input
-            v-model="newRestaurant.description"
-            id="description"
-            type="text"
-            class="input-field"
+              v-model="newRestaurant.description"
+              id="description"
+              type="text"
+              class="input-field"
           />
 
           <label for="minimum_delivery_amount">最低配送金额</label>
           <input
-            v-model="newRestaurant.minimum_delivery_amount"
-            id="minimum_delivery_amount"
-            type="number"
-            class="input-field"
+              v-model="newRestaurant.minimum_delivery_amount"
+              id="minimum_delivery_amount"
+              type="number"
+              class="input-field"
           />
         </div>
       </div>
       <template #footer>
         <Button
-          label="取消"
-          icon="pi pi-times"
-          class="p-button-text"
-          @click="visible = false"
+            label="取消"
+            icon="pi pi-times"
+            class="p-button-text"
+            @click="visible = false"
         />
         <Button
-          label="保存"
-          icon="pi pi-check"
-          class="p-button-primary"
-          @click="editingRestaurant ? updateRestaurant() : createRestaurant()"
+            label="保存"
+            icon="pi pi-check"
+            class="p-button-primary"
+            @click="editingRestaurant ? updateRestaurant() : createRestaurant()"
         />
       </template>
     </Dialog>

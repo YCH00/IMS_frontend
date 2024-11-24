@@ -1,46 +1,48 @@
 <script setup lang="ts">
-    import { Card } from 'primevue';
-    import { computed, onMounted, ref } from "vue";
-    import instance from '../../../http';
+import {Card} from 'primevue';
+import {computed, onMounted, ref} from "vue";
+import instance from '../../../utils/request';
 
-    const restaurant_count = ref(0);
+const restaurant_count = ref(0);
 
-    onMounted(()=>{
-        get_RestaurantCount();
-    });
+onMounted(() => {
+  get_RestaurantCount();
+});
 
-    const get_RestaurantCount = async () => {
-        try{
-            const response = await instance.get('/merchant/restaurants');
-            if(response.data.ecode == 200){
-                console.log(response.data)
-                restaurant_count.value = response.data.data.restaurants.length;
-            }
-        } catch(error) {alert(error.message);}
+const get_RestaurantCount = async () => {
+  try {
+    const response = await instance.get('/merchant/restaurants');
+    if (response.data.ecode == 200) {
+      console.log(response.data)
+      restaurant_count.value = response.data.data.restaurants.length;
     }
+  } catch (error) {
+    alert(error.message);
+  }
+}
 </script>
 
 <template>
-    <Card class="custom-card">
-        <template #content>
-            <div class="custom-card-header">
-                <div class="header-left">
-                    <span class="restaurant-label">Current total number of restaurants</span>
-                    <div class="restaurant-count">{{restaurant_count}}</div>
-                </div>
-            <div class="icon-container">
-                <i class="pi pi-shopping-cart custom-icon"></i>
-            </div>
+  <Card class="custom-card">
+    <template #content>
+      <div class="custom-card-header">
+        <div class="header-left">
+          <span class="restaurant-label">Current total number of restaurants</span>
+          <div class="restaurant-count">{{ restaurant_count }}</div>
         </div>
-        </template>
-        <template #footer>
-          <div class="custom-card-footer">
-                <div class="footer-content">
-                    <span class="footer-text">Under your management</span>
-                </div>
-            </div>
-        </template>
-      </Card>
+        <div class="icon-container">
+          <i class="pi pi-shopping-cart custom-icon"></i>
+        </div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="custom-card-footer">
+        <div class="footer-content">
+          <span class="footer-text">Under your management</span>
+        </div>
+      </div>
+    </template>
+  </Card>
 </template>
 
 <style scoped>
@@ -105,8 +107,8 @@
 }
 
 .footer-content {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .footer-text {

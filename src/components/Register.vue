@@ -1,5 +1,4 @@
-<script setup lang="ts">
-// 组件
+<script setup>
 import Button from "primevue/button"; // 按钮组件
 import IftaLabel from "primevue/iftalabel"; // 标签组件
 import InputText from "primevue/inputtext"; // 输入框组件
@@ -7,12 +6,12 @@ import RadioButton from "primevue/radiobutton"; // 单选按钮组件
 
 import {ref} from "vue"; // Vue 的响应式变量
 import instance from "../utils/request.js"; // Axios 实例，用于发送 HTTP 请求
-import router from "../router/router";
-import {ElMessage} from "element-plus"; // 路由实例，用于页面跳转
+import router from "../router/router"; // 路由实例，用于页面跳转
 
 // 定义响应式变量，用于绑定表单数据
-const phone_number = ref(""); // 用户账号
+const Account = ref(""); // 用户账号
 const password = ref(""); // 用户密码
+const confirmPassword = ref(""); // 确认密码
 const identity = ref("admin"); // 身份，默认为管理员(admin)
 const errorMessage = ref(""); // 动态显示错误信息
 
@@ -24,15 +23,17 @@ const validateForm = () => {
         Account.value.length >= 10 &&
         Account.value.length <= 30 &&
         password.value.length >= 15 &&
-        password.value.length <= 30
+        password.value.length <= 30 &&
+        password.value === confirmPassword.value // 确认密码必须匹配
     );
   } else {
-    // 用户身份的账号和密码要求
+    // 商家身份的账号和密码要求
     return (
         Account.value.length >= 6 &&
         Account.value.length <= 30 &&
         password.value.length >= 8 &&
-        password.value.length <= 30
+        password.value.length <= 30 &&
+        password.value === confirmPassword.value // 确认密码必须匹配
     );
   }
 };
@@ -42,73 +43,68 @@ const getValidationHint = () => {
   if (identity.value === "admin") {
     return "管理员账号需为 10-30 字符，密码需为 15-30 字符";
   } else {
-    return "用户账号需为 6-30 字符，密码需为 8-30 字符";
+    return "商家账号需为 6-30 字符，密码需为 8-30 字符";
   }
 };
 
 // 处理错误消息
-const handleError = (message: string) => {
+const handleError = (message) => {
   errorMessage.value = message;
   setTimeout(() => (errorMessage.value = ""), 3000); // 3 秒后清除错误消息
 };
 
-// 登录函数：向服务器发送登录请求并跳转到对应的页面
-async function try_login(event: Event) {
+// 注册函数：向服务器发送注册请求并跳转到对应的页面
+async function try_register(event) {
   event.preventDefault(); // 防止表单默认提交行为
 
-  const data = {
-    phone_number: phone_number.value, // 替换为实际的账号字段
-    password: password.value,         // 替换为实际的密码字段
-  };
+  // 如果表单校验未通过，提示用户并退出函数
+  if (!validateForm()) {
+    handleError("账号或密码长度不符合要求，或者密码和确认密码不匹配");
+    return;
+  }
+
+  // 构造表单数据
+  let data = new FormData();
+  data.append("account", Account.value); // 添加账号
+  data.append("password", password.value); // 添加密码
+  data.append("identity", identity.value); // 添加身份参数
 
   try {
+    // 根据身份选择对应的 API 接口
+    const apiPath = (identity.value === "admin") ? "/admin/register" : "/merchant/register";
+
     // 发送 POST 请求
-    const response = await instance.post("/login", data, {
-      headers: {
-        "Content-Type": "application/json", // 确保指定 JSON 格式
-      },
-    })
+    const response = await instance.post(apiPath, data);
 
-    // 获取后端返回的 JSON 数据
-    const {code, message, userData} = response.data;
-
-    if (code === "000") {
-      // 显示成功消息
-      ElMessage({
-        message: "登录成功!欢迎回来!",
-        type: "success",
-        duration: 3000,
-      })
-      // TODO:在这里处理成功逻辑，比如跳转页面
-
+    // 根据返回结果处理注册逻辑
+    if (response.status === 200 && response.data.msg === "ok") {
+      console.log("注册成功");
+      // 跳转到对应身份的首页
+      if (identity.value === "admin") {
+        await router.push("/admin_Home");
+      } else {
+        await router.push("/merchant_Home");
+      }
     } else {
-      // 显示错误消息
-      ElMessage({
-        message: message || "登录失败，请检查账号或密码。",
-        type: "error",
-        duration: 3000,
-      });
+      console.log("注册失败");
+      handleError(response.data.msg);
     }
   } catch (error) {
-    // 显示网络错误消息
-    ElMessage({
-      message: "网络错误，请稍后重试。",
-      type: "error",
-      duration: 3000,
-    });
+    console.error("注册请求失败:", error);
+    handleError("注册失败，请检查网络或联系管理员");
   }
 }
 </script>
 
 <template>
   <div class="container">
-    <!-- 登录表单容器 -->
+    <!-- 注册表单容器 -->
     <div class="screen">
       <div class="screen__content">
         <form class="login">
-          <!-- 登录标题 -->
+          <!-- 注册标题 -->
           <h3 class="login_header">
-            {{ identity === "admin" ? "管理员登录" : "普通用户登录" }}
+            {{ identity === "admin" ? "管理员注册" : "商家注册" }}
           </h3>
 
           <!-- 错误消息 -->
@@ -121,9 +117,9 @@ async function try_login(event: Event) {
               <InputText
                   id="Account"
                   class="login__input"
-                  v-model="phone_number"
+                  v-model="Account"
               />
-              <label for="Account">电话号码</label>
+              <label for="Account">账号</label>
             </IftaLabel>
           </div>
 
@@ -142,47 +138,32 @@ async function try_login(event: Event) {
             </IftaLabel>
           </div>
 
-          <!-- 身份选择单选框 -->
-          <div class="radio-group">
-            <div class="radio-item">
-              <RadioButton
-                  id="admin"
-                  v-model="identity"
-                  value="admin"
-                  class="custom-radio"
-                  variant="filled"
+          <!-- 确认密码输入框 -->
+          <div class="login__field">
+            <IftaLabel>
+              <i class="pi pi-lock icon"></i> <!-- 密码图标 -->
+              <InputText
+                  id="ConfirmPassword"
+                  type="password"
+                  class="login__input"
+                  v-model="confirmPassword"
+                  toggleMask
               />
-              <label for="admin" class="radio-label">管理员</label>
-            </div>
-            <div class="radio-item">
-              <RadioButton
-                  id="merchant"
-                  v-model="identity"
-                  value="merchant"
-                  class="custom-radio"
-                  variant="filled"
-              />
-              <label for="merchant" class="radio-label">商家</label>
-            </div>
+              <label for="ConfirmPassword">确认密码</label>
+            </IftaLabel>
           </div>
 
           <!-- 提示信息 -->
           <p class="validation-hint">{{ getValidationHint() }}</p>
 
-          <!-- 登录按钮 -->
+          <!-- 注册按钮 -->
           <Button
               class="button login__submit"
-              @click="try_login"
+              @click="try_register"
               :disabled="!validateForm"
           >
-            <span class="button__text">登录</span>
+            <span class="button__text">注册</span>
           </Button>
-
-          <!-- 在此处加入跳转到注册界面的部分 -->
-          <p class="register-link">
-            还没有账号？
-            <a href="/register" @click.prevent="router.push('/register')">点击注册</a>
-          </p>
         </form>
       </div>
 
@@ -221,4 +202,5 @@ async function try_login(event: Event) {
   font-size: 0.85rem;
   margin-top: 0.5rem;
 }
+
 </style>

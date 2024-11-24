@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
-import { ref } from "vue";
-import instance from "../../../http.js";
+import {ref} from "vue";
+import instance from "../../../utils/request.js";
 import router from "../../../router/router.js";
 
 let visible = ref(false);
@@ -58,8 +58,8 @@ async function change_pwd() {
 
 <template>
   <div class="centered-button-container">
-    <Button label="Change Password" icon="pi pi-user" @click="visible = true" />
-    <Button label="Logout" icon="pi pi-ban" @click="logout" />
+    <Button label="Change Password" icon="pi pi-user" @click="visible = true"/>
+    <Button label="Logout" icon="pi pi-ban" @click="logout"/>
   </div>
 
   <Dialog v-model:visible="visible" class="custom-dialog">
@@ -68,31 +68,31 @@ async function change_pwd() {
         <div class="input-group">
           <label for="new_pwd" class="label">New Password</label>
           <InputText
-            id="new_pwd"
-            type="password"
-            class="input-text"
-            v-model="pwdModel.new_pwd"
+              id="new_pwd"
+              type="password"
+              class="input-text"
+              v-model="pwdModel.new_pwd"
           />
         </div>
         <div class="input-group">
           <label for="con_pwd" class="label">Confirm New Password</label>
           <InputText
-            id="con_pwd"
-            type="password"
-            class="input-text"
-            v-model="pwdModel.con_pwd"
+              id="con_pwd"
+              type="password"
+              class="input-text"
+              v-model="pwdModel.con_pwd"
           />
         </div>
         <div class="button-group">
           <Button
-            label="Cancel"
-            @click="closeCallback"
-            class="button cancel-button"
+              label="Cancel"
+              @click="closeCallback"
+              class="button cancel-button"
           />
           <Button
-            label="Submit"
-            @click="change_pwd"
-            class="button sign-in-button"
+              label="Submit"
+              @click="change_pwd"
+              class="button sign-in-button"
           />
         </div>
       </div>
@@ -119,6 +119,7 @@ async function change_pwd() {
   border: none;
   background-color: rgba(0, 0, 0, 0.8); /* 半透明黑色背景 */
 }
+
 .custom-dialog .p-dialog-mask {
   backdrop-filter: blur(4px);
 }
@@ -180,6 +181,7 @@ async function change_pwd() {
   color: #776bcc; /* 浅灰色文本 */
   background-color: #ffffff;
 }
+
 .sign-in-button {
   color: #776bcc; /* 浅灰色文本 */
   background-color: #ffffff;
