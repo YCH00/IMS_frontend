@@ -3,9 +3,9 @@ import {showMessage} from "./message.js";
 
 const localHost = "http://127.0.0.1:5000"; // 本地URL
 
-// 创建一个 axios 实例，并设置基础 URL
 const instance = axios.create({
-    baseURL: localHost,
+    baseURL: "http://127.0.0.1:5000", // 后端地址
+    timeout: 5000,                   // 超时时间，单位：毫秒
 });
 
 // 添加响应拦截器，用于在响应到达调用者之前处理它
@@ -21,7 +21,7 @@ instance.interceptors.response.use(
         } else if (error.status === 401) {
             showMessage('401!!!!!!!', 'error')
         } else {
-            console.log(error);
+            showMessage(error, 'error')
         }
         console.log('返回reject');
         // 返回一个被拒绝的 Promise，以便调用者可以处理错误
