@@ -2,7 +2,7 @@
 
 ## 说明
 
-本仓库是管理员面板(面向Web Browser)的上游仓库，马恒超作为Maintainer。
+本仓库是管理员面板(面向Web Browser)的上游仓库。
 
 ## 运行说明
 
@@ -11,6 +11,6 @@
 'git clone'项目后输入如下命令运行项目。
 ```
 # npm运行过慢可配置Taobao镜像cnpm
-npm run install
+npm install
 npm run dev
 ```
