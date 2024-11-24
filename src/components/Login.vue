@@ -61,34 +61,32 @@ async function try_login() {
   data.append("identity", identity.value); // 添加身份参数
 
 
-//   try {
-//     const apiPath =
-//       identity.value === "admin"
-//         ? "/admin/login"
-//         : "/merchant/login";
-//     const response = await instance.post(apiPath, data);
-
-    router.push("/admin_Home");
-
-//     if (response.status === 200) {
-//       if (response.data.msg === "ok") {
-//         console.log("登录成功");
-//         if (identity.value === "admin") {
-//           router.push("/admin_Home");
-//         } else if (identity.value === "merchant") {
-//           router.push("/merchant_Home");
-//         }
-//       } else {
-//         console.log("登录失败");
-//         alert(response.data.msg);
-//       }
-//     } else {
-//       console.log("响应错误");
-//       alert(response.data.msg);
-//     }
-//   } catch (error) {
-//     alert(error.message);
-//   }
+  try {
+    const apiPath =
+      identity.value === "admin" ? "/admin/login" : 
+      identity.value === "doctor" ? "/doctor/login" : "patient/login" ;
+    const response = await instance.post(apiPath, data);
+    if (response.status === 200) {
+      if (response.data.msg === "ok") {
+        console.log("登录成功");
+        if (identity.value === "admin") {
+          router.push("/admin_Home");
+        } else if (identity.value === "doctor") {
+          router.push("/merchant_Home");
+        } else if (identity.value === "patient") {
+          router.push("/patient_Home");
+        }
+      } else {
+        console.log("登录失败");
+        alert(response.data.msg);
+      }
+    } else {
+      console.log("响应错误");
+      alert(response.data.msg);
+    }
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
 
