@@ -8,25 +8,40 @@ const instance = axios.create({
     timeout: 5000,                   // 超时时间，单位：毫秒
 });
 
-// 添加响应拦截器，用于在响应到达调用者之前处理它
-instance.interceptors.response.use(
-    (response) => {
-        return response;
-    },
-    (error) => {
-        if (error.status === 504 || error.status === 404) {
-            showMessage('服务器被吃了( ╯□╰ )504', 'error')
-        } else if (error.status === 403) {
-            showMessage('服务器被吃了( ╯□╰ )403', 'error')
-        } else if (error.status === 401) {
-            showMessage('401!!!!!!!', 'error')
-        } else {
-            showMessage(error, 'error')
-        }
-        console.log('返回reject');
-        // 返回一个被拒绝的 Promise，以便调用者可以处理错误
-        return Promise.reject(error);
+// 添加请求拦截器
+instance.interceptors.request.use(function (config) {
+    // 在发送请求之前做些什么
+    const token = localStorage.getItem('pz_token')
+    // 不需要添加token的api
+    const whiteUrl = ['/login', '/register']
+    if (token && !whiteUrl.includes(config.url)) {
+        config.headers['Authorization'] = `Bearer ${token}`;
     }
-);
+
+    return config;
+}, function (error) {
+    // 对请求错误做些什么
+    showMessage(error, 'error')
+    return Promise.reject(error);
+});
+
+// 添加响应拦截器
+instance.interceptors.response.use(function (response) {
+    // 对接口异常的数据,给用户提示
+    if (response.data.code === "111") {
+        showMessage(response.data.message, 'error')
+    }
+
+    return response;
+}, function (error) {
+    if (error.response && error.response.status === 401) {
+        // Token 过期或者无效时，清除 token，并跳转到登录页面
+        localStorage.removeItem('pz_token');
+        window.location.href = '/login';  // 跳转到登录页面
+    } else {
+        showMessage(error, 'error');
+    }
+    return Promise.reject(error);
+});
 
 export default instance;

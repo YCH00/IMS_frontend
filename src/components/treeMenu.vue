@@ -1,5 +1,5 @@
 <template>
-  <tempalte v-for="(item, index) in props.menuData">
+  <template v-for="(item, index) in props.menuData">
     <!--  有子菜单  -->
     <el-menu-item
         v-if="!item.children || item.children === 0"
@@ -22,7 +22,7 @@
       </template>
       <tree-menu :index="`${props.index}-${item.meta.id}`" :menuData="item.children"/>
     </el-sub-menu>
-  </tempalte>
+  </template>
 </template>
 
 <script setup>
@@ -41,7 +41,6 @@ const handleClick = (item, active) => {
   router.push(item.meta.path)
   console.log(item.meta.path, "path")
 }
-
 
 </script>
 

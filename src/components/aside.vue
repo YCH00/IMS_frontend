@@ -1,7 +1,7 @@
 <template>
   <el-menu
       class="aside-container"
-      :style="{width: '230px'}"
+      :style="{width: !isCollapse ? '230px' : '65px'}"
       :default-active="'2'"
       :collapse="isCollapse"
       :active-text-color="'#ffd04b'"
@@ -19,14 +19,14 @@
 import treeMenu from './treeMenu.vue';
 import {useRouter} from 'vue-router';
 import {useStore} from 'vuex';
-import {reactive, computed} from 'vue';
+import {ref, computed} from 'vue';
 
 const store = useStore()
 const isCollapse = computed(() => store.state.menu.isCollapse)
 
 const router = useRouter()
 
-const menuData = reactive(router.options.routes[0].children)
+const menuData = ref(router.options.routes[0].children)
 
 const handleOpen = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)
@@ -38,6 +38,7 @@ const handleClose = (key: string, keyPath: string[]) => {
 
 
 <style lang="less" scoped>
+
 .aside-container {
   display: flex;
   flex-direction: column;

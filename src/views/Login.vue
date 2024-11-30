@@ -9,6 +9,8 @@ import instance from "../utils/request.js"; // Axios 实例，用于发送 HTTP 
 import router from "../router/router";
 import {showMessage} from "../utils/message.js";
 
+import {login} from "../api"
+
 // 定义响应式变量，用于绑定表单数据
 const login_form = reactive({
   phone_number: "",
@@ -45,27 +47,22 @@ async function try_login(event: Event) {
     return;
   }
 
-  try {
-    // 发送 POST 请求
-    const response = await instance.post("/login", login_form)
-
-    // 获取后端返回的 JSON 数据
-    const {code, message, data} = response.data;
-
-    if (code === "000") {
-      // 显示成功信息
-      showMessage(message, "success");
+  // 调用登录接口
+  login(login_form).then(({data}) => {
+    // 处理响应数据
+    if (data.code === "000") {
+      showMessage(data.message, "success");
       // TODO:在这里处理成功逻辑，比如跳转页面
-      await router.push('/admin/home');
+      // TODO:将用户的token和信息缓存到浏览器中
+      localStorage.setItem('pz_token', data.data.token)
+      localStorage.setItem('pz_userInfo', JSON.stringify(data.data.user_info))
+      router.push('/');
     } else {
-      // 显示错误消息
       showMessage(response.data.error || "登录失败", "error");
     }
-  } catch (error) {
-    // 显示网络错误消息
-    showMessage("网络错误，请稍后再试", "error");
-  }
+  })
 }
+
 </script>
 
 <template>

@@ -8,6 +8,7 @@ import {reactive, ref} from "vue"; // Vue 的响应式变量
 import instance from "../utils/request.js"; // Axios 实例，用于发送 HTTP 请求
 import router from "../router/router"; // 路由实例，用于页面跳转
 import {showMessage} from "../utils/message.js";
+import {register} from "../api";
 
 // 定义响应式变量，用于绑定表单数据
 const register_form = reactive({
@@ -76,28 +77,18 @@ async function try_register(event: Event) {
   if (!validateForm()) {
     return
   }
-  try {
-    const response = await instance.post("/register", register_form)
 
-    // 获取后端返回的 JSON 数据
-    const {code, message, data} = response.data;
-
-    if (code === "000") {
-      // 显示成功信息
-      showMessage(message, "success");
+  // 调用注册接口
+  register(register_form).then(({data}) => {
+    // 处理响应数据
+    if (data.code === "000") {
+      showMessage(data.message, "success");
       // TODO:在这里处理成功逻辑，比如跳转页面
-      router.push('/admin/home');
+      router.push('/login');
     } else {
-      // 显示错误消息
       showMessage(response.data.error || "注册失败", "error");
     }
-
-  } catch (error) {
-    // 显示网络错误消息
-    showMessage("网络错误，请稍后再试", "error");
-  }
-
-
+  })
 }
 </script>
 

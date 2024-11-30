@@ -13,7 +13,10 @@
           <el-icon size="12">
             <component :is="item.icon"/>
           </el-icon>
-          <router-link class="text flex-box" :to="{path: item.path}"> {{ item.name }}</router-link>
+          <router-link class="custom-link text flex-box" :to="{path: item.path}"> {{
+              item.name
+            }}
+          </router-link>
           <el-icon class="close" size="12" @click="closeTab(item, index)">
             <Close/>
           </el-icon>
@@ -25,7 +28,7 @@
       <el-dropdown>
         <div class="el-dropdown-link flex-box">
           <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/>
-          <p class="user-name">admin</p>
+          <p class="user-name">{{ username }}</p>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
@@ -40,7 +43,7 @@
 
 
 <script setup>
-import {computed} from 'vue';
+import {computed, ref} from 'vue';
 import {useStore} from 'vuex'
 import {useRoute, useRouter} from 'vue-router';
 
@@ -51,9 +54,9 @@ const router = useRouter()
 const selectMenu = computed(() => store.state.menu.selectMenu)
 
 // 点击关闭tab
-const closeTab = () => {
+const closeTab = (item, index) => {
   store.commit('closeMenu', item)
-  //若删除非当前页tag
+  // 若删除非当前页tag
   if (route.path !== item.path) {
     return
   }
@@ -75,6 +78,11 @@ const closeTab = () => {
   }
 }
 
+// 获取用户名
+const userInfoString = localStorage.getItem('pz_userInfo');
+const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
+const username = ref(userInfo && userInfo.name ? userInfo.name : userInfo?.phone_number);
+
 </script>
 
 <style lang="less" scoped>
@@ -86,32 +94,35 @@ const closeTab = () => {
 }
 
 .header-container {
-  height: 60px;
-  width: 100%;
-  background-color: #ffffff;
-  padding-right: 25px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 100%;
+  background-color: #fff;
+  padding-right: 25px;
 
   .header-left {
     height: 100%;
-    justify-content: space-between;
-    flex-shrink: 0;
 
     .icon {
       width: 45px;
       height: 100%;
+      color: black;
     }
 
     .icon:hover {
-      background-color: #f5f5f583;
+      background-color: #f5f5f5;
       cursor: pointer;
     }
 
     .tab {
       padding: 0 10px;
       height: 100%;
+
+      .custom-link {
+        text-decoration: none; /* 去掉下划线 */
+        color: inherit; /* 可选，继承父级颜色，避免默认蓝色 */
+      }
 
       .text {
         margin: 0 5px;
@@ -146,16 +157,7 @@ const closeTab = () => {
   }
 
   .header-right {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    /* 确保高度为父容器的 100% */
-    flex-shrink: 0;
-    /* 防止其压缩 */
-
     .user-name {
-      color: #fff;
-      font-size: 16px;
       margin-left: 10px;
     }
   }
@@ -165,6 +167,5 @@ const closeTab = () => {
     color: #333;
     font-size: 15px;
   }
-
 }
 </style>

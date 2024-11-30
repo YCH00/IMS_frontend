@@ -1,6 +1,6 @@
 const state = {
-    isCollapse: false,
-    selectMenu: []
+    isCollapse: false, // 展开与收起
+    selectMenu: [] // Tabs
 }
 
 const mutations = {
@@ -16,6 +16,7 @@ const mutations = {
     },
 
     closeMenu(state, payload) {
+        console.log("删除Menu")
         //找到点击数据的索引
         const index = state.selectMenu.findIndex(val => val.name === payload.name)
         //通过索引删除数组指定元素

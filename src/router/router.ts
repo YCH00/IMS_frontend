@@ -7,6 +7,7 @@ import AdminUser from "../views/ManagerPages/User/index.vue"
 import AdminDoctor from "../views/ManagerPages/Doctor/index.vue"
 import AdminDept from "../views/ManagerPages/Department/index.vue"
 import AdminMedicine from "../views/ManagerPages/Medicine/index.vue"
+import AdminMenu from "../views/ManagerPages/Menu/index.vue"
 import HomePage from "../views/HomePage/index.vue"
 // import instance from '../utils/request.js';
 // 定义路由规则
@@ -37,6 +38,16 @@ const routes = [
                     icon: "Management",
                 },
                 children: [
+                    {
+                        path: 'menus',
+                        component: AdminMenu,
+                        meta: {
+                            id: '0',
+                            name: '菜单管理', // 页面标题
+                            icon: 'CirclePlus', // 可选：侧边栏图标
+                            path: '/admin/menus'
+                        },
+                    },
                     {
                         path: 'users',
                         component: AdminUser,
