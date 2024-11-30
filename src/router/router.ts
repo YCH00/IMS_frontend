@@ -1,58 +1,105 @@
 import {createRouter, createWebHistory} from 'vue-router';
-import Login from '../views/Login.vue';
-import Register from "../views/Register.vue";
-import Admin_Main from "../views/Admin_Home/index.vue"
-import Admin_Home from '../components/admin_layout/Admin_Home.vue';
-import instance from '../utils/request.js';
-
+// import instance from '../utils/request.js';
 // 定义路由规则
 const routes = [
-    // 登录界面
     {
-        path: '/login',
-        component: Login
+        path: '/',
+        component: () => import('../views/main.vue'),
+        name: 'main',
+        children: [
+            {
+                path: '/dashboard',
+                component: () => import('../views/Admin/home.vue'),
+                meta: {
+                    id: '1',
+                    name: '控制台',
+                    icon: 'Platform',
+                    path: '/dashboard',
+                    component: () => import('../views/Admin/home.vue')
+                }
+            },
+            {
+                path: '/main',
+                component: () => import('../views/Admin/home.vue')
+            },
+
+        ]
     },
     // 注册界面
     {
         path: '/register',
-        component: Register
+        component: () => import('../views/Register.vue') // 注册页面组件
     },
-    // 管理员主页面
+    // 登录界面
     {
-        path: "/admin/home",
-        component: Admin_Main
+        path: '/login',
+        component: () => import('../views/Login.vue')
     },
     // 管理员主页面
     {
         path: '/admin_home',
-        component: Admin_Home,
+        component: () => import('../views/Admin/main.vue'),
         children: [
             {
                 path: '',
-                component: () => import('../components/admin_layout/manager_view/index.vue')
+                component: () => import('../views/Admin/home.vue')
             },
             {
-                path: 'index',
-                component: () => import('../components/admin_layout/manager_view/index.vue')
+                path: '/main',
+                component: () => import('../views/Admin/home.vue')
             },
-            {
-                path: 'change_password',
-                component: () => import('../components/admin_layout/manager_view/change_password.vue')
-            },
-            {
-                path: 'create_merchants',
-                component: () => import('../components/admin_layout/manager_view/create_merchants.vue')
-            },
-            {
-                path: 'delete_merchants',
-                component: () => import('../components/admin_layout/manager_view/delete_merchants.vue')
-            },
-            {
-                path: 'applications/:page',
-                component: () => import('../components/admin_layout/manager_view/applications.vue')
-            },
+
         ]
     },
+    // // 商家主页面
+    // {
+    //     path: '/doctor_home',
+    //     component: Doctor_Home,
+    //     props: true,
+    //     children: [
+    //         {
+    //             path: '',
+    //             component: () => import('../components/doctor_layout/doctor_view/Merchant_dashboard.vue')
+    //         },
+    //         {
+    //             path: 'change_merchant_password',
+    //             component: () => import('../components/doctor_layout/doctor_view/change_doctor_password.vue')
+    //         },
+    //         {
+    //             path: 'Merchant_restaurant',
+    //             component: () => import('../components/doctor_layout/doctor_view/Merchant_restaurant.vue'),
+    //         },
+    //         {
+    //             path: '/restaurant/:restaurantID',
+    //             component: () => import('../components/doctor_layout/doctor_view/Merchant_category.vue'),
+    //             props: true
+    //         }
+    //     ]
+    // },
+    // {
+    //     path: '/patient_home',
+    //     component: Patient_Home,
+    //     props: true,
+    //     children: [
+    //         {
+    //             path: '',
+    //             component: () => import('../components/patient_layout/patient_view/Merchant_dashboard.vue')
+    //         },
+    //         {
+    //             path: 'change_patient_password',
+    //             component: () => import('../components/patient_layout/patient_view/change_patient_password.vue')
+    //         },
+    //         {
+    //             path: 'Merchant_restaurant',
+    //             component: () => import('../components/patient_layout/patient_view/Merchant_restaurant.vue'),
+    //         },
+    //         {
+    //             path: '/restaurant/:restaurantID',
+    //             component: () => import('../components/patient_layout/patient_view/Merchant_category.vue'),
+    //             props: true
+    //         }
+    //     ]
+    // },
     // 捕获所有未匹配的路径并重定向到登录页面
     {
         path: '/:catchAll(.*)',
@@ -68,22 +115,78 @@ const router = createRouter({
 
 // 设置全局导航守卫
 router.beforeEach(async (to, from, next) => {
-    if (to.path === '/login' || to.path === '/register') {
-        /*
-        * TODO: 检查用户是否已经登录
-        *  如果已经登录 则用户则不会访问登录注册界面 直接跳转到主页
-        *  目前是直接放行
-        * */
+    console.log('进入导航守卫');
+    console.log(to); // 打印目标路由信息
+    console.log(from); // 打印来源路由信息
 
-        return next(); // 直接放行
-    }
+    // // 如果访问登录页面
+    // if (to.path === '/login' || to.path === '/register') {
+    //     console.log(`守卫进入${to.path}`);
+    //     try {
+    //         // 检查管理员和商家登录状态
+    //         const admin_login_response = await instance.get("/admin/login-status");
+    //         const doctor_login_response = await instance.get("/merchant/login-status");
+    //         const patient_login_response = await instance.get("/patient/login-status");
 
-    /*
-    * TODO: 用户状态与访问页面之间的关系
-    *  比如普通用户无法访问管理员的页面
-    * */
+    //         // 如果管理员已经登录，跳转到管理员首页
+    //         if (admin_login_response.status === 200) {
+    //             return next('/admin_home');
+    //         }
+    //         // 如果商家已经登录，跳转到商家首页
+    //         else if (doctor_login_response.status === 200) {
+    //             return next('/doctor_home');
+    //         }
+    //         else if (patient_login_response.status === 200) {
+    //             return next('/patient_home');
+    //         }
+    //         // 未登录，继续访问登录页面
+    //         else {
+    //             return next();
+    //         }
+    //     } catch (err) {
+    //         console.error('请求失败:', err);
+    //         return next();  // 请求失败时继续访问 login 页面
+    //     }
+    // }
 
-    return next(); // 直接放行
+    // // 如果访问管理员主页面
+    // else if (to.path === '/admin_home') {
+    //     try {
+    //         const response = await instance.get("/admin/login-status");
+
+    //         // 如果管理员没有登录，跳转到登录页面
+    //         if (response.status !== 200) {
+    //             return next('/login');
+    //         } else {
+    //             return next(); // 如果管理员已登录，继续访问 admin_home 页面
+    //         }
+    //     } catch (error) {
+    //         console.error('请求失败:', error);
+    //         return next('/login'); // 请求失败时跳转到 login 页面
+    //     }
+    // }
+
+    // // 如果目标路径是 '/doctor_home' 页面
+    // else if (to.path.startsWith('/doctor_home')) {
+    //     console.log("进入判断");
+    //     try {
+    //         const response = await instance.get("/doctor/login-status");
+
+    //         // 如果商家没有登录，跳转到登录页面
+    //         if (response.status !== 200) {
+    //             return next('/login');
+    //         } else {
+    //             console.log("跳转成功");
+    //             return next(); // 如果商家已登录，继续访问 merchant_home 页面
+    //         }
+    //     } catch (error) {
+    //         console.error('请求失败:', error);
+    //         return next('/login'); // 请求失败时跳转到 login 页面
+    //     }
+    // }
+
+    // 对其他路径，直接调用 next() 继续导航
+    return next();
 });
 
 export default router;
