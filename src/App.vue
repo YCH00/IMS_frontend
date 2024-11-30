@@ -9,8 +9,14 @@
 
 <style>
     body{
+        height: 100%;
         margin : 0;
         background-color:#f3f4f6;
     }
+    
+    html, #app{
+        height: 100%;
+    }
+
 </style>
 
