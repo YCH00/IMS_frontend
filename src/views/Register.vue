@@ -86,7 +86,7 @@ async function try_register(event: Event) {
       // 显示成功信息
       showMessage(message, "success");
       // TODO:在这里处理成功逻辑，比如跳转页面
-      await router.push('/admin/home');
+      router.push('/admin/home');
     } else {
       // 显示错误消息
       showMessage(response.data.error || "注册失败", "error");

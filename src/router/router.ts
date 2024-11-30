@@ -1,106 +1,98 @@
 import {createRouter, createWebHistory} from 'vue-router';
+// 引入组件
+import Login from "../views/Login.vue"
+import Register from "../views/Register.vue"
+import Layout from "../views/Main.vue"
+import AdminUser from "../views/ManagerPages/User/index.vue"
+import AdminDoctor from "../views/ManagerPages/Doctor/index.vue"
+import AdminDept from "../views/ManagerPages/Department/index.vue"
+import AdminMedicine from "../views/ManagerPages/Medicine/index.vue"
+import HomePage from "../views/HomePage/index.vue"
 // import instance from '../utils/request.js';
 // 定义路由规则
 const routes = [
+    // 主界面路由
     {
         path: '/',
-        component: () => import('../views/main.vue'),
+        component: Layout,
         name: 'main',
         children: [
             {
-                path: '/dashboard',
-                component: () => import('../views/Admin/home.vue'),
+                path: 'home',
+                component: HomePage,
                 meta: {
                     id: '1',
-                    name: '控制台',
-                    icon: 'Platform',
-                    path: '/dashboard',
+                    name: '主页',
+                    icon: 'HomeFilled',
+                    path: '/home',
                     component: () => import('../views/Admin/home.vue')
-                }
+                },
             },
             {
-                path: '/main',
-                component: () => import('../views/Admin/home.vue')
-            },
-
+                // 管理界面导航
+                path: '/admin',
+                meta: {
+                    id: '2',
+                    name: "后台管理",
+                    icon: "Management",
+                },
+                children: [
+                    {
+                        path: 'users',
+                        component: AdminUser,
+                        meta: {
+                            id: '1',
+                            name: '用户管理', // 页面标题
+                            icon: 'Pear', // 可选：侧边栏图标
+                            path: '/admin/users'
+                        },
+                    },
+                    {
+                        path: 'doctors',
+                        component: AdminDoctor,
+                        meta: {
+                            id: '2',
+                            name: '医生管理',
+                            icon: 'Grape',
+                            path: '/admin/doctors'
+                        },
+                    },
+                    {
+                        path: 'departments',
+                        component: AdminDept,
+                        meta: {
+                            id: '3',
+                            name: '科室管理',
+                            icon: 'Orange',
+                            path: '/admin/departments'
+                        },
+                    },
+                    {
+                        path: 'medicines',
+                        name: 'AdminMedicine',
+                        component: AdminMedicine,
+                        meta: {
+                            id: '4',
+                            name: '药品管理',
+                            icon: 'Sugar',
+                            path: '/admin/medicines'
+                        },
+                    }
+                ]
+            }
         ]
     },
-    // 注册界面
+    // 注册界面路由
     {
         path: '/register',
-        component: () => import('../views/Register.vue') // 注册页面组件
+        component: Register
     },
-    // 登录界面
+    // 登录界面路由
     {
         path: '/login',
-        component: () => import('../views/Login.vue')
+        component: Login
     },
-    // 管理员主页面
-    {
-        path: '/admin_home',
-        component: () => import('../views/Admin/main.vue'),
-        children: [
-            {
-                path: '',
-                component: () => import('../views/Admin/home.vue')
-            },
-            {
-                path: '/main',
-                component: () => import('../views/Admin/home.vue')
-            },
-
-        ]
-    },
-    // // 商家主页面
-    // {
-    //     path: '/doctor_home',
-    //     component: Doctor_Home,
-    //     props: true,
-    //     children: [
-    //         {
-    //             path: '',
-    //             component: () => import('../components/doctor_layout/doctor_view/Merchant_dashboard.vue')
-    //         },
-    //         {
-    //             path: 'change_merchant_password',
-    //             component: () => import('../components/doctor_layout/doctor_view/change_doctor_password.vue')
-    //         },
-    //         {
-    //             path: 'Merchant_restaurant',
-    //             component: () => import('../components/doctor_layout/doctor_view/Merchant_restaurant.vue'),
-    //         },
-    //         {
-    //             path: '/restaurant/:restaurantID',
-    //             component: () => import('../components/doctor_layout/doctor_view/Merchant_category.vue'),
-    //             props: true
-    //         }
-    //     ]
-    // },
-    // {
-    //     path: '/patient_home',
-    //     component: Patient_Home,
-    //     props: true,
-    //     children: [
-    //         {
-    //             path: '',
-    //             component: () => import('../components/patient_layout/patient_view/Merchant_dashboard.vue')
-    //         },
-    //         {
-    //             path: 'change_patient_password',
-    //             component: () => import('../components/patient_layout/patient_view/change_patient_password.vue')
-    //         },
-    //         {
-    //             path: 'Merchant_restaurant',
-    //             component: () => import('../components/patient_layout/patient_view/Merchant_restaurant.vue'),
-    //         },
-    //         {
-    //             path: '/restaurant/:restaurantID',
-    //             component: () => import('../components/patient_layout/patient_view/Merchant_category.vue'),
-    //             props: true
-    //         }
-    //     ]
-    // },
-    // 捕获所有未匹配的路径并重定向到登录页面
+    // 非法路由
     {
         path: '/:catchAll(.*)',
         redirect: '/login'
@@ -119,73 +111,6 @@ router.beforeEach(async (to, from, next) => {
     console.log(to); // 打印目标路由信息
     console.log(from); // 打印来源路由信息
 
-    // // 如果访问登录页面
-    // if (to.path === '/login' || to.path === '/register') {
-    //     console.log(`守卫进入${to.path}`);
-    //     try {
-    //         // 检查管理员和商家登录状态
-    //         const admin_login_response = await instance.get("/admin/login-status");
-    //         const doctor_login_response = await instance.get("/merchant/login-status");
-    //         const patient_login_response = await instance.get("/patient/login-status");
-
-    //         // 如果管理员已经登录，跳转到管理员首页
-    //         if (admin_login_response.status === 200) {
-    //             return next('/admin_home');
-    //         }
-    //         // 如果商家已经登录，跳转到商家首页
-    //         else if (doctor_login_response.status === 200) {
-    //             return next('/doctor_home');
-    //         }
-    //         else if (patient_login_response.status === 200) {
-    //             return next('/patient_home');
-    //         }
-    //         // 未登录，继续访问登录页面
-    //         else {
-    //             return next();
-    //         }
-    //     } catch (err) {
-    //         console.error('请求失败:', err);
-    //         return next();  // 请求失败时继续访问 login 页面
-    //     }
-    // }
-
-    // // 如果访问管理员主页面
-    // else if (to.path === '/admin_home') {
-    //     try {
-    //         const response = await instance.get("/admin/login-status");
-
-    //         // 如果管理员没有登录，跳转到登录页面
-    //         if (response.status !== 200) {
-    //             return next('/login');
-    //         } else {
-    //             return next(); // 如果管理员已登录，继续访问 admin_home 页面
-    //         }
-    //     } catch (error) {
-    //         console.error('请求失败:', error);
-    //         return next('/login'); // 请求失败时跳转到 login 页面
-    //     }
-    // }
-
-    // // 如果目标路径是 '/doctor_home' 页面
-    // else if (to.path.startsWith('/doctor_home')) {
-    //     console.log("进入判断");
-    //     try {
-    //         const response = await instance.get("/doctor/login-status");
-
-    //         // 如果商家没有登录，跳转到登录页面
-    //         if (response.status !== 200) {
-    //             return next('/login');
-    //         } else {
-    //             console.log("跳转成功");
-    //             return next(); // 如果商家已登录，继续访问 merchant_home 页面
-    //         }
-    //     } catch (error) {
-    //         console.error('请求失败:', error);
-    //         return next('/login'); // 请求失败时跳转到 login 页面
-    //     }
-    // }
-
-    // 对其他路径，直接调用 next() 继续导航
     return next();
 });
 
