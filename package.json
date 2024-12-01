@@ -26,6 +26,7 @@
   "devDependencies": {
     "@primevue/auto-import-resolver": "^4.1.1",
     "@vitejs/plugin-vue": "^5.1.4",
+    "dayjs": "^1.11.13",
     "element-plus": "^2.8.8",
     "less": "^4.2.0",
     "unplugin-auto-import": "^0.18.6",
