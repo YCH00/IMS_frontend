@@ -30,6 +30,8 @@
 import {useRouter} from 'vue-router'
 import {useStore} from 'vuex';
 
+const menuData = store.menuData;
+
 const props = defineProps(['menuData', "index"])
 
 const router = useRouter()

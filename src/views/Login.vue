@@ -54,8 +54,12 @@ async function try_login(event: Event) {
       showMessage(data.message, "success");
       // TODO:在这里处理成功逻辑，比如跳转页面
       // TODO:将用户的token和信息缓存到浏览器中
-      localStorage.setItem('pz_token', data.data.token)
-      localStorage.setItem('pz_userInfo', JSON.stringify(data.data.user_info))
+      const token = data.data.token;
+      const userInfo = JSON.stringify(data.data.user_info)
+      localStorage.setItem('token', token)
+      localStorage.setItem('userInfo', userInfo)
+      console.log(token, "登录令牌")
+      console.log(userInfo, "用户信息")
       router.push('/');
     } else {
       showMessage(response.data.error || "登录失败", "error");

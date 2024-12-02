@@ -9,6 +9,11 @@ export const register = (data) => {
 export const login = (data) => {
     return request.post('/login', data)
 }
+// 获取动态路由
+export const getDynamicRoutes = () => {
+    return request.get('/api/user/routes')
+}
+
 
 // 获取所有的用户信息
 export const getAllUserInfo = (data) => {
