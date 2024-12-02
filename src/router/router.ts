@@ -8,6 +8,7 @@ import AdminDoctor from "../views/ManagerPages/Doctor/index.vue"
 import AdminDept from "../views/ManagerPages/Department/index.vue"
 import AdminMedicine from "../views/ManagerPages/Medicine/index.vue"
 import AdminMenu from "../views/ManagerPages/Menu/index.vue"
+import AdminRole from "../views/ManagerPages/Role/index.vue"
 import HomePage from "../views/HomePage/index.vue"
 // import instance from '../utils/request.js';
 // 定义路由规则
@@ -39,10 +40,20 @@ const routes = [
                 },
                 children: [
                     {
+                        path: 'roles',
+                        component: AdminRole,
+                        meta: {
+                            id: '0',
+                            name: '角色管理', // 页面标题
+                            icon: 'UserFilled', // 可选：侧边栏图标
+                            path: '/admin/roles'
+                        },
+                    },
+                    {
                         path: 'menus',
                         component: AdminMenu,
                         meta: {
-                            id: '0',
+                            id: '1',
                             name: '菜单管理', // 页面标题
                             icon: 'CirclePlus', // 可选：侧边栏图标
                             path: '/admin/menus'
@@ -52,7 +63,7 @@ const routes = [
                         path: 'users',
                         component: AdminUser,
                         meta: {
-                            id: '1',
+                            id: '2',
                             name: '用户管理', // 页面标题
                             icon: 'Pear', // 可选：侧边栏图标
                             path: '/admin/users'
@@ -62,7 +73,7 @@ const routes = [
                         path: 'doctors',
                         component: AdminDoctor,
                         meta: {
-                            id: '2',
+                            id: '3',
                             name: '医生管理',
                             icon: 'Grape',
                             path: '/admin/doctors'
@@ -72,7 +83,7 @@ const routes = [
                         path: 'departments',
                         component: AdminDept,
                         meta: {
-                            id: '3',
+                            id: '4',
                             name: '科室管理',
                             icon: 'Orange',
                             path: '/admin/departments'
@@ -83,7 +94,7 @@ const routes = [
                         name: 'AdminMedicine',
                         component: AdminMedicine,
                         meta: {
-                            id: '4',
+                            id: '5',
                             name: '药品管理',
                             icon: 'Sugar',
                             path: '/admin/medicines'
