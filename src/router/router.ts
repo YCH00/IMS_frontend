@@ -1,32 +1,21 @@
 import {createRouter, createWebHistory} from 'vue-router';
-// 引入组件
-import Login from "../views/Login.vue"
-import Register from "../views/Register.vue"
-import Layout from "../views/Main.vue"
-import AdminUser from "../views/ManagerPages/User/index.vue"
-import AdminDoctor from "../views/ManagerPages/Doctor/index.vue"
-import AdminDept from "../views/ManagerPages/Department/index.vue"
-import AdminMedicine from "../views/ManagerPages/Medicine/index.vue"
-import AdminMenu from "../views/ManagerPages/Menu/index.vue"
-import HomePage from "../views/HomePage/index.vue"
-// import instance from '../utils/request.js';
 // 定义路由规则
 const routes = [
     // 主界面路由
     {
         path: '/',
-        component: Layout,
+        component: () => import('../views/Main.vue'),
         name: 'main',
         children: [
             {
                 path: 'home',
-                component: HomePage,
+                component: () => import('../views/HomePage/index.vue'),
                 meta: {
                     id: '1',
                     name: '主页',
                     icon: 'HomeFilled',
                     path: '/home',
-                    component: () => import('../views/Admin/home.vue')
+                    component: () => import('../views/Admin/home.vue')  // 这个是干嘛的？ 似乎没有用
                 },
             },
             {
@@ -40,7 +29,7 @@ const routes = [
                 children: [
                     {
                         path: 'menus',
-                        component: AdminMenu,
+                        component: () => import('../views/ManagerPages/Menu/index.vue'),
                         meta: {
                             id: '0',
                             name: '菜单管理', // 页面标题
@@ -50,7 +39,7 @@ const routes = [
                     },
                     {
                         path: 'users',
-                        component: AdminUser,
+                        component: () => import('../views/ManagerPages/User/index.vue'),
                         meta: {
                             id: '1',
                             name: '用户管理', // 页面标题
@@ -60,7 +49,7 @@ const routes = [
                     },
                     {
                         path: 'doctors',
-                        component: AdminDoctor,
+                        component: () => import('../views/ManagerPages/Doctor/index.vue'),
                         meta: {
                             id: '2',
                             name: '医生管理',
@@ -70,7 +59,7 @@ const routes = [
                     },
                     {
                         path: 'departments',
-                        component: AdminDept,
+                        component: () => import('../views/ManagerPages/Department/index.vue'),
                         meta: {
                             id: '3',
                             name: '科室管理',
@@ -81,13 +70,24 @@ const routes = [
                     {
                         path: 'medicines',
                         name: 'AdminMedicine',
-                        component: AdminMedicine,
+                        component: () => import('../views/ManagerPages/Medicine/index.vue'),
                         meta: {
                             id: '4',
                             name: '药品管理',
                             icon: 'Sugar',
                             path: '/admin/medicines'
                         },
+                    },
+                    {
+                        path: 'item',
+                        name: 'AdminItem',
+                        component: () => import('../views/ManagerPages/Item/index.vue'),
+                        meta: {
+                            id: '5',
+                            name: '检查项目管理',
+                            icon: 'Stamp',
+                            path: '/admin/item'
+                        }
                     }
                 ]
             }
@@ -96,12 +96,12 @@ const routes = [
     // 注册界面路由
     {
         path: '/register',
-        component: Register
+        component: () => import('../views/Register.vue')
     },
     // 登录界面路由
     {
         path: '/login',
-        component: Login
+        component: () => import('../views/Login.vue')
     },
     // 非法路由
     {
@@ -119,8 +119,8 @@ const router = createRouter({
 // 设置全局导航守卫
 router.beforeEach(async (to, from, next) => {
     console.log('进入导航守卫');
-    console.log(to); // 打印目标路由信息
-    console.log(from); // 打印来源路由信息
+    console.log('to: ', to); // 打印目标路由信息
+    console.log('from: ', from); // 打印来源路由信息
 
     return next();
 });
