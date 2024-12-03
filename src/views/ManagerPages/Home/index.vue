@@ -33,7 +33,9 @@
             <!-- 折线图 -->
             <div class="line-charts-container">
                 <Card class="line-chart-card">
-                    <template #title>过去10天总就诊人数</template>
+                    <template #title>
+                        <div class="card-title">过去10天总就诊人数</div>
+                    </template>
                     <template #content>
                         <Line class="line-chart" :data="chartData" :options="chartOptions" />
                     </template>
@@ -42,7 +44,9 @@
             <!-- 待处理事项 -->
             <div class="pending-tasks-container">
                 <Card class="pending-tasks-card">
-                    <template #title>待处理事项</template>
+                    <template #title>
+                        <div class="card-title">待处理事项</div>
+                    </template>
                     <template #content>
                         <ul>
                             <li v-for="(task, index) in pendingTasks" :key="index" class="task-item">
@@ -329,7 +333,7 @@ export default {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.line-chart-card .p-card-title {
+.line-chart-card .card-title {
     font-size: 20px;
     font-weight: bold;
     color: #333;
@@ -372,7 +376,7 @@ export default {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.pending-tasks-card .p-card-title {
+.pending-tasks-card .card-title {
     font-size: 20px;
     font-weight: bold;
     color: #333;
@@ -403,4 +407,5 @@ export default {
     font-size: 16px;
     color: #333;
 }
+
 </style>
