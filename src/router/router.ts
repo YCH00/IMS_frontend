@@ -1,3 +1,4 @@
+import component from 'element-plus/es/components/tree-select/src/tree-select-option.mjs';
 import {createRouter, createWebHistory} from 'vue-router';
 // 定义路由规则
 const routes = [
@@ -15,7 +16,7 @@ const routes = [
                     name: "管理员页面",
                     icon: "Management",
                 },
-                children: [
+                children: [ 
                     {
                         path: 'home',
                         component: () => import('../views/ManagerPages/Home/index.vue'),
@@ -107,10 +108,62 @@ const routes = [
                         }
                     },
                     {
+                        path: 'financial',
+                        //component: () => import('../views/ManagerPages/Financial/index.vue'),
+                        meta: {
+                            id: '9',
+                            name: '财务管理',
+                            icon: 'Stamp',
+                            path: '/admin/financial'
+                        },
+                        children: [
+                            {
+                                path: 'salary-payment',
+                                component: () => import('../views/ManagerPages/Financial/SalaryAndBonus/index.vue'),
+                                meta: {
+                                    id: '1',
+                                    name: '酬金发放',
+                                    icon: 'Stamp',
+                                    path: '/admin/financial/salary-payment'
+                                }
+                            },
+                            {
+                                path: 'financial-allocation',
+                                component: () => import('../views/ManagerPages/Financial/FiscalAppropriation/index.vue'),
+                                meta: {
+                                    id: '2',
+                                    name: '财政拨款',
+                                    icon: 'Stamp',
+                                    path: '/admin/financial/financial-allocation'
+                                }
+                            },
+                            {
+                                path: 'reimbursement',
+                                component: () => import('../views/ManagerPages/Financial/Reimbursement/index.vue'),
+                                meta: {
+                                    id: '3',
+                                    name: '报销平台',
+                                    icon: 'Stamp',
+                                    path: '/admin/financial/reimbursement'
+                                }
+                            },
+                            {
+                                path: 'payment-platform',
+                                component: () => import('../views/ManagerPages/Financial/Payment/index.vue'),
+                                meta: {
+                                    id: '4',
+                                    name: '缴费平台',
+                                    icon: 'Stamp',
+                                    path: '/admin/financial/payment-platform'
+                                }
+                            },
+                        ]
+                    },
+                    {
                         path: 'data',
                         component: () => import('../views/ManagerPages/Data/index.vue'),
                         meta: {
-                            id: '9',
+                            id: '10',
                             name: '数据统计',
                             icon: 'Stamp',
                             path: '/admin/data'
