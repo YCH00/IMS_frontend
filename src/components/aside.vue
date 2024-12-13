@@ -22,7 +22,8 @@ import {computed} from 'vue';
 
 const store = useStore()
 const isCollapse = computed(() => store.state.menu.isCollapse)
-const menuData = computed(() => store.state.menu.menuData);
+const DynamicMenuData = computed(() => store.state.menu.menuData || []);
+const menuData = DynamicMenuData.value[0].children;
 
 const handleOpen = (key: string, keyPath: string[]) => {
   console.log('打开菜单:', key, keyPath);

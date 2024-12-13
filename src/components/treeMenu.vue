@@ -1,6 +1,6 @@
 <template>
   <template v-for="(item, index) in props.menuData">
-    <!--  有子菜单  -->
+    <!--  没有子菜单  -->
     <el-menu-item
         v-if="!item.children || item.children === 0"
         :index="`${props.index}-${item.meta.id}`"
@@ -29,8 +29,6 @@
 // 动态树形菜单
 import {useRouter} from 'vue-router'
 import {useStore} from 'vuex';
-
-const menuData = store.menuData;
 
 const props = defineProps(['menuData', "index"])
 

@@ -33,7 +33,7 @@
         <template #dropdown>
           <el-dropdown-menu>
             <el-dropdown-item>个人信息</el-dropdown-item>
-            <el-dropdown-item>退出登录</el-dropdown-item>
+            <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -83,6 +83,15 @@ const userInfoString = localStorage.getItem('pz_userInfo');
 const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
 const username = ref(userInfo && userInfo.name ? userInfo.name : userInfo?.phone_number);
 
+// 退出登录
+const logout = () => {
+  // 清除 localStorage 中的用户信息
+  localStorage.removeItem('token')
+  localStorage.removeItem('userInfo');
+
+  // 跳转到登录页面
+  router.push('/login');
+};
 </script>
 
 <style lang="less" scoped>

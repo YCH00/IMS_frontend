@@ -5,10 +5,9 @@ import InputText from "primevue/inputtext";
 import RadioButton from "primevue/radiobutton";
 
 import {reactive, ref} from "vue";
-import instance from "../utils/request.js"; // Axios 实例，用于发送 HTTP 请求
 import router from "../router/router";
 import {showMessage} from "../utils/message.js";
-
+// 后端API接口函数
 import {login} from "../api"
 
 // 定义响应式变量，用于绑定表单数据
@@ -52,8 +51,6 @@ async function try_login(event: Event) {
     // 处理响应数据
     if (data.code === "000") {
       showMessage(data.message, "success");
-      // TODO:在这里处理成功逻辑，比如跳转页面
-      // TODO:将用户的token和信息缓存到浏览器中
       const token = data.data.token;
       const userInfo = JSON.stringify(data.data.user_info)
       localStorage.setItem('token', token)
@@ -62,7 +59,7 @@ async function try_login(event: Event) {
       console.log(userInfo, "用户信息")
       router.push('/');
     } else {
-      showMessage(response.data.error || "登录失败", "error");
+      showMessage(data.error || "登录失败", "error");
     }
   })
 }

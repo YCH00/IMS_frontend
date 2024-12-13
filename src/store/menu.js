@@ -6,17 +6,8 @@ const state = {
 
 const mutations = {
     setMenuData(state, routes) {
-        state.menuData = routes.filter(route => route.meta).map(route => ({
-            path: route.path,
-            name: route.meta.name,
-            icon: route.meta.icon,
-            children: route.children ? route.children.map(child => ({
-                path: child.path,
-                name: child.meta.name,
-                icon: child.meta.icon,
-            })) : []
-        }));
-        console.log(state.menuData, "存储的菜单数据")
+        state.menuData = routes
+        console.log(state.menuData, "MenuData///")
     },
 
     collapseMenu(state) {

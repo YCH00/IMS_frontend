@@ -1,18 +1,21 @@
 import {createRouter, createWebHistory} from 'vue-router';
-import instance from "../utils/request";
-import {getDynamicRoutes} from "../api";
+import {getDynamicRoutes, login} from "../api";
 import store from "../store"
 // 引入组件
 import Login from "../views/Login.vue"
 import Register from "../views/Register.vue"
-import Layout from "../views/Main.vue"
-import AdminUser from "../views/ManagerPages/User/index.vue"
-import AdminDoctor from "../views/ManagerPages/Doctor/index.vue"
-import AdminDept from "../views/ManagerPages/Department/index.vue"
-import AdminMedicine from "../views/ManagerPages/Medicine/index.vue"
-import AdminMenu from "../views/ManagerPages/Menu/index.vue"
-import AdminRole from "../views/ManagerPages/Role/index.vue"
-import HomePage from "../views/HomePage/index.vue"
+/*
+// 改为动态加载
+// import Main from "../views/Main.vue"
+// import AdminUser from "../views/ManagerPages/User/index.vue"
+// import AdminDoctor from "../views/ManagerPages/Doctor/index.vue"
+// import AdminDept from "../views/ManagerPages/Department/index.vue"
+// import AdminMedicine from "../views/ManagerPages/Medicine/index.vue"
+// import AdminMenu from "../views/ManagerPages/Menu/index.vue"
+// import AdminRole from "../views/ManagerPages/Role/index.vue"
+// import HomePage from "../views/HomePage/index.vue"
+*/
+
 
 // 静态路由
 const staticRoutes = [
@@ -32,12 +35,12 @@ const staticRoutes = [
 
 // 工具函数：动态加载组件
 function loadView(viewPath) {
-    return () => import(`../views/${viewPath}.vue`);
+    return () => import(`../views/${viewPath}`);
 }
 
 // 工具函数：格式化路由
 function formatRoutes(routes) {
-    const formattedRoutes = [];
+    const formattedRoutes = []; // 格式化之后的路由数据
     routes.forEach(route => {
         const {path, component, meta, children} = route;
         const formattedRoute = {
@@ -48,6 +51,7 @@ function formatRoutes(routes) {
         };
         formattedRoutes.push(formattedRoute);
     });
+    console.log(formattedRoutes, "Dynamic Route Data After Formated");
     return formattedRoutes;
 }
 
@@ -63,8 +67,9 @@ router.hasDynamicRoutes = false;
 // 路由守卫
 router.beforeEach(async (to, from, next) => {
     console.log('进入导航守卫');
-    console.log(to, "从哪里来"); // 打印目标路由信息
-    console.log(from, "到哪里去"); // 打印来源路由信息
+    console.log(from, "Come From Where?"); // 打印来源路由信息
+    console.log(to, "Go To Wherer");   // 打印目标路由信息
+
     const token = localStorage.getItem('token'); // 从localStorage中获取token
 
     // 允许未登录用户访问的白名单
@@ -79,31 +84,30 @@ router.beforeEach(async (to, from, next) => {
     // 如果未加载动态路由，向后端请求并添加
     if (token && !router.hasDynamicRoutes) {
         try {
-            console.log("没有加载动态路由")
-            // 请求后端动态路由并等待完成
-            const {data} = await getDynamicRoutes();
-            const routesData = data.data.routes;
-
-            console.log(routesData, "从后端获取的路由数据");
-            // 格式化路由并添加到路由实例中
-            const dynamicRoutes = formatRoutes(routesData);
-            console.log(dynamicRoutes, "格式化之后的路由数据");
-            dynamicRoutes.forEach(route => {
-                router.addRoute(route);
-            });
-            console.log(router, "加入动态路由之后的路由实例");
-            router.hasDynamicRoutes = true;
-
-            // 根据后端返回的路由数据生成菜单
-            store.commit('setMenuData', routesData);
-
-            // 重新导航到目标路由，确保新路由生效
-            return next({...to, replace: true});
+            console.log("No dynamic routing loaded!!!")
+            getDynamicRoutes().then(({data}) => {
+                    const routesData = data.data.routes;
+                    // 格式化路由并添加到路由实例中
+                    const dynamicRoutes = formatRoutes(routesData);
+                    dynamicRoutes.forEach(route => {
+                        console.log(route, "Route")
+                        router.addRoute(route);
+                    });
+                    console.log(dynamicRoutes, "Dynamic Route Data");
+                    store.commit('setMenuData', dynamicRoutes);
+                    router.hasDynamicRoutes = true;
+                    return next({...to, replace: true});
+                }
+            )
         } catch (error) {
             console.error('获取动态路由失败', error);
             return next('/login'); // 失败时跳转到登录页
         }
+    } else {
+        const menuData = store.state.menu.menuData;
+        console.log(menuData, "Dynamic Route Data")
     }
+
 
     // 如果是静态路由或动态路由已加载，直接放行
     next();
