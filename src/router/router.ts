@@ -1,4 +1,4 @@
-import component from 'element-plus/es/components/tree-select/src/tree-select-option.mjs';
+// import component from 'element-plus/es/components/tree-select/src/tree-select-option.mjs';
 import {createRouter, createWebHistory} from 'vue-router';
 // 定义路由规则
 const routes = [

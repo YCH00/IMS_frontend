@@ -26,7 +26,8 @@
                     </el-select>
                 </el-form-item>
                 <el-form-item label="日期">
-                    <el-date-picker v-model="newSchedule.date" type="date" placeholder="选择日期"></el-date-picker>
+                    <el-date-picker v-model="newSchedule.date" type="date" placeholder="选择日期"
+                        ></el-date-picker>
                 </el-form-item>
                 <el-form-item label="时间">
                     <el-select v-model="newSchedule.time" placeholder="请选择时间">
@@ -59,25 +60,38 @@ const doctors = ref([
 ]);
 
 const times = ref([
-    {time: '上午班', id: 1},
-    {time: '下午班', id: 2},
-    {time: '白班', id: 3},
-    {time: '夜班', id: 4}
+    { time: '上午班', id: 1 },
+    { time: '下午班', id: 2 },
+    { time: '白班', id: 3 },
+    { time: '夜班', id: 4 }
 ]);
 
 const newSchedule = ref({ doctor: '', date: '', time: '', id: null });
 const dialogVisible = ref(false);
-var isAdd = false;
+let isAdd = false;
 
 const showAddDialog = () => {
     newSchedule.value = { doctor: '', date: '', time: '', id: null };
-    isAdd = true;
+    isAdd = true; 
     dialogVisible.value = true;
 };
 
 const ensure = () => {
-    if(isAdd){
+    console.log("newShedule: ", newSchedule);
+    if(!formValid(newSchedule)){
+        console.log("failure: ");
+        // 添加弹窗
+        return;
+    }
+    newSchedule.value.date = formatDate(newSchedule.value.date); // 格式化日期
+    if (isAdd) {
         schedules.value.push({ ...newSchedule.value, id: Date.now() });
+    } else {
+        // 编辑排班
+        const index = schedules.value.findIndex(schedule => schedule.id === newSchedule.value.id);
+        if (index !== -1) {
+            schedules.value[index] = { ...newSchedule.value }; // 更新排班信息
+        }
     }
     dialogVisible.value = false;
 };
@@ -87,7 +101,8 @@ const cancel = () => {
 }
 
 const editSchedule = (index, row) => {
-    // newSchedule.value = { ...row };
+    // 复制当前行数据到 newSchedule，并显示在弹框中
+    newSchedule.value = { ...row };
     isAdd = false;
     dialogVisible.value = true;
 };
@@ -96,7 +111,32 @@ const deleteSchedule = (index, row) => {
     schedules.value.splice(index, 1);
 };
 
+// 格式化日期为 "yyyy-MM-dd"
+const formatDate = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const formValid = (form) => {
+    if(!form.doctor){
+        console.log("form.doc is null");
+    }
+    if(!form.date){
+        console.log("form.date is null");
+    }
+    if(!form.time){
+        console.log("form.time is null");
+    }
+    if(form.doctor && form.date && form.time){
+        return true;
+    }
+    return false;
+}
 </script>
+
 
 <style scoped>
 .doctor-schedule {
