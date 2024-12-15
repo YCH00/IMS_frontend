@@ -10,8 +10,14 @@ export const login = (data) => {
     return request.post('/login', data)
 }
 // 获取动态路由
-export const getDynamicRoutes = () => {
-    return request.get('/api/user/routes')
+export const getDynamicRoutes = (roleType) => {
+    const routeEndpoints = {
+        admin: '/api/admin/routes',
+        doctor: '/api/doctor/routes',
+        user: '/api/user/routes',
+    };
+    const url = routeEndpoints[roleType] || routeEndpoints.user;
+    return request.get(url);
 }
 
 

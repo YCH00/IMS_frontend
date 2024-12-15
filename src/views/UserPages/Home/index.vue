@@ -17,23 +17,30 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {ref} from 'vue';
+import {useRouter} from 'vue-router';
 
-const userName = ref('李自瞻');
+const router = useRouter() // 获取当前路由
+
+const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+const userName = ref(userInfo.name);
 
 function goToHistory() {
   // 跳转到历史检查记录页面
   console.log('跳转到历史检查记录页面');
+  router.push("/user/exam-record")
 }
 
 function goToMedicalRecords() {
   // 跳转到病例详情页面
   console.log('跳转到病例详情页面');
+
 }
 
 function goToProfile() {
   // 跳转到个人信息管理页面
   console.log('跳转到个人信息管理页面');
+  router.push("/user/profile");
 }
 </script>
 
@@ -48,8 +55,8 @@ function goToProfile() {
 
 .header {
   width: 100%;
-  background-color: #000;
-  color: #fff;
+  background-color: #302c2b;
+  color: #ffffff;
   text-align: center;
   padding: 10px 0;
   font-size: 1.5rem;

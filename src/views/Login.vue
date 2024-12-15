@@ -53,11 +53,14 @@ async function try_login(event: Event) {
       showMessage(data.message, "success");
       const token = data.data.token;
       const userInfo = JSON.stringify(data.data.user_info)
-      localStorage.setItem('token', token)
+      localStorage.setItem('pz_token', token)
       localStorage.setItem('userInfo', userInfo)
+      localStorage.setItem('role', identity.value)
       console.log(token, "登录令牌")
       console.log(userInfo, "用户信息")
-      router.push('/');
+      console.log(identity.value, "用户角色")
+      router.hasDynamicRoutes = false;
+      router.push('/home');
     } else {
       showMessage(data.error || "登录失败", "error");
     }
