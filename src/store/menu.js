@@ -1,9 +1,15 @@
 const state = {
+    menuData: [], // 动态加载的菜单数据
     isCollapse: false, // 展开与收起
     selectMenu: [] // Tabs
 }
 
 const mutations = {
+    setMenuData(state, routes) {
+        state.menuData = routes
+        console.log(state.menuData, "MenuData///")
+    },
+
     collapseMenu(state) {
         state.isCollapse = !state.isCollapse
     },

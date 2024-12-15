@@ -15,7 +15,6 @@
 <script setup>
 import Aside from '../components/aside.vue'
 import Header from '../components/navHeader.vue'
-import test from './Doctor/patient_manage.vue'
 </script>
 
 <style lang="less" scoped>

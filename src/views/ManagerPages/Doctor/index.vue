@@ -1,214 +1,177 @@
 <template>
-    <div class="admin-department-management">
-        <div class="header">科室管理</div>
-        <div class="search-bar">
-            <input type="text" placeholder="搜索科室" v-model="searchQuery" />
-            <button @click="searchDepartments">搜索</button>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>选择</th>
-                    <th>科室名称</th>
-                    <th>科室电话</th>
-                    <th>科室负责人</th>
-                    <th>科室地址</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="department in filteredDepartments" :key="department.id">
-                    <td><input type="checkbox" v-model="selectedDepartments" :value="department.id" /></td>
-                    <td>{{ department.name }}</td>
-                    <td>{{ department.phone }}</td>
-                    <td>{{ department.head }}</td>
-                    <td>{{ department.address }}</td>
-                    <td>
-                        <button @click="editDepartment(department.id)">编辑</button>
-                        <button @click="deleteDepartment(department.id)">删除</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="pagination">
-            <!-- 分页组件，根据需要实现 -->
-        </div>
-        <button @click="addDepartment">新增科室</button>
+  <div class="admin-doctors-management">
+    <div class="header">医生管理</div>
+    <div class="search-bar">
+      <input type="text" placeholder="搜索医生" v-model="searchQuery"/>
+      <button @click="searchDoctors">搜索</button>
     </div>
+
+    <table>
+      <thead>
+      <tr>
+        <th>选择</th>
+        <th>医生姓名</th>
+        <th>联系方式</th>
+        <th>邮箱</th>
+        <th>所属科室</th>
+        <th>操作</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="data in tableData.list" :key="data.id">
+        <td><input type="checkbox" v-model="currentDoctor" :value="data.id"/></td>
+        <td>{{ data.name }}</td>
+        <td>{{ data.phone_number }}</td>
+        <td>{{ data.email }}</td>
+        <td>{{ data.specialty_name }}</td>
+        <td>
+          <button @click="editDoctor(data.id)">编辑</button>
+          <button @click="deleteDoctor(data.id)">删除</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <button @click="addDoctor">新增医生</button>
+
+    <!-- 分页部分 -->
+    <el-pagination
+        @current-change="(page) => {
+      paginationData.pageNumber = page;
+      loadTableData();
+    }"
+        @size-change="(size) => {
+      paginationData.pageSize = size;
+      loadTableData();
+    }"
+        :current-page="paginationData.pageNum"
+        :page-size="paginationData.pageSize"
+        :total="tableData.total"
+        layout="prev, pager, next, sizes, total"
+        :page-sizes="[10, 20, 50, 100]"
+    />
+
+  </div>
 </template>
+
 <script setup>
-import { ref, computed } from 'vue';
+import dayjs from 'dayjs'
+import {ref, computed, reactive, onMounted} from 'vue';
+import {getAllDoctorInfo} from "../../../api/index.js";
 
+// 分页数据
+const paginationData = reactive({
+  pageNumber: 1,
+  pageSize: 10
+})
+// 搜索数据
 const searchQuery = ref('');
-const departments = ref([
-    // 假设科室数据
-    { id: 1, name: '内科', phone: '010-12345678', head: '张主任', address: '北京市东城区医院大楼' },
-    { id: 2, name: '外科', phone: '010-87654321', head: '李主任', address: '北京市朝阳区医院大楼' },
-    { id: 3, name: '妇产科', phone: '010-23456789', head: '王主任', address: '北京市海淀区医院大楼' },
-    { id: 4, name: '儿科', phone: '010-34567890', head: '赵主任', address: '北京市西城区医院大楼' },
-    { id: 5, name: '眼科', phone: '010-45678901', head: '孙主任', address: '北京市丰台区医院大楼' },
-    { id: 6, name: '牙科', phone: '010-56789012', head: '周主任', address: '北京市昌平区医院大楼' }
-]);
 
-const filteredDepartments = computed(() => {
-    return departments.value.filter(department => department.name.includes(searchQuery.value));
+// 列表数据
+const tableData = reactive({
+  list: [],
+  total: 0
+})
+
+const currentDoctor = reactive({
+  id: null,
+  name: '',
+  phone_number: '',
+  email: "",
+  specialty_name: ""
 });
 
-const selectedDepartments = []; // 存储选中的科室ID
+// 加载科室列表
+const loadTableData = () => {
+  const queryParams = {
+    ...paginationData,
+    searchQuery: searchQuery.value
+  };
+  getAllDoctorInfo(queryParams).then(({data}) => {
+    const {total, list} = data.data
+    console.log(list, "科室数据")
+    list.forEach(item => {
+      item.created_at = item.created_at
+          ? dayjs(item.created_at).format("YYYY-MM-DD")
+          : "N/A"; // 默认显示"N/A"或其他占位符
+    })
+    tableData.list = list;
+    tableData.total = total;
+  });
+};
 
-function searchDepartments() {
-    // 目前只根据科室名称进行搜索
-    console.log('搜索科室:', searchQuery.value);
+
+function searchDoctors() {
+  loadTableData();
 }
 
-function editDepartment(id) {
-    console.log('编辑科室', id);
-    // 根据科室ID进行编辑操作（例如打开编辑弹窗等）
+function editDoctor(id) {
+  // 编辑医生逻辑
+  console.log('编辑医生', id);
 }
 
-function deleteDepartment(id) {
-    console.log('删除科室', id);
-    // 删除指定ID的科室
-    const index = departments.value.findIndex(department => department.id === id);
-    if (index !== -1) {
-        departments.value.splice(index, 1);
-    }
+function deleteDoctor(id) {
+  // 删除医生逻辑
+  console.log('删除医生', id);
 }
 
-function addDepartment() {
-    console.log('新增科室');
-    // 打开新增科室的弹窗或者直接将新科室添加到列表
-    const newId = departments.value.length + 1;
-    departments.value.push({
-        id: newId,
-        name: '新科室',
-        phone: '010-00000000',
-        head: '新主任',
-        address: '新地址'
-    });
+function addDoctor() {
+  // 新增医生逻辑
+  console.log('新增医生');
 }
+
+onMounted(() => {
+  loadTableData();
+})
 </script>
 
-
 <style scoped>
-.admin-department-management {
-    width: 100%;
-    padding: 20px;
-    background-color: #f7f7f7;
+.admin-doctors-management {
+  padding: 20px;
+  background-color: #f5f5f5;
 }
 
 .header {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #333;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 .search-bar {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.search-bar input {
-    width: 250px;
-    padding: 8px 12px;
-    font-size: 14px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-right: 10px;
-}
-
-.search-bar button {
-    padding: 8px 16px;
-    font-size: 14px;
-    background-color: #409eff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.search-bar button:hover {
-    background-color: #66b1ff;
+  margin-bottom: 20px;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-    background-color: white;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  border-collapse: collapse;
 }
 
-table th,
-table td {
-    padding: 12px;
-    text-align: center;
-    font-size: 14px;
-    border-bottom: 1px solid #f2f2f2;
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
 }
 
-table th {
-    background-color: #f5f5f5;
-    color: #333;
-}
-
-table td {
-    color: #666;
-}
-
-table td button {
-    padding: 5px 10px;
-    background-color: #f0ad4e;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-table td button:hover {
-    background-color: #ec971f;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-.pagination button {
-    padding: 6px 12px;
-    font-size: 14px;
-    background-color: #409eff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    margin: 0 5px;
-    cursor: pointer;
-}
-
-.pagination button:hover {
-    background-color: #66b1ff;
+th {
+  background-color: #4CAF50;
+  color: white;
 }
 
 button {
-    padding: 8px 16px;
-    font-size: 14px;
-    background-color: #5cb85c;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+  padding: 5px 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 button:hover {
-    background-color: #4cae4c;
+  background-color: #45a049;
 }
 
-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+.pagination {
+  margin-top: 20px;
+  text-align: center;
 }
 </style>

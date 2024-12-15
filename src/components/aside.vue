@@ -17,23 +17,20 @@
 
 <script lang="ts" setup>
 import treeMenu from './treeMenu.vue';
-import {useRouter} from 'vue-router';
 import {useStore} from 'vuex';
-import {ref, computed} from 'vue';
+import {computed} from 'vue';
 
 const store = useStore()
 const isCollapse = computed(() => store.state.menu.isCollapse)
-
-const router = useRouter()
-
-const menuData = ref(router.options.routes[0].children)
+const DynamicMenuData = computed(() => store.state.menu.menuData || []);
+const menuData = DynamicMenuData.value[0].children;
 
 const handleOpen = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
-}
+  console.log('打开菜单:', key, keyPath);
+};
 const handleClose = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
-}
+  console.log('关闭菜单:', key, keyPath);
+};
 </script>
 
 

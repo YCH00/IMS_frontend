@@ -21,21 +21,21 @@
             </ul>
         </div>
 
-        <div class="header-right">
-            <el-dropdown>
-                <div class="el-dropdown-link flex-box">
-                    <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
-                    <p class="user-name">{{ username }}</p>
-                </div>
-                <template #dropdown>
-                    <el-dropdown-menu>
-                        <el-dropdown-item>个人信息</el-dropdown-item>
-                        <el-dropdown-item>退出登录</el-dropdown-item>
-                    </el-dropdown-menu>
-                </template>
-            </el-dropdown>
+    <div class="header-right">
+      <el-dropdown>
+        <div class="el-dropdown-link flex-box">
+          <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/>
+          <p class="user-name">{{ username }}</p>
         </div>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item>个人信息</el-dropdown-item>
+            <el-dropdown-item @click="logout">退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
+  </div>
 </template>
 
 
@@ -82,6 +82,15 @@ const userInfoString = localStorage.getItem('pz_userInfo');
 const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
 const username = ref(userInfo && userInfo.name ? userInfo.name : userInfo?.phone_number);
 
+// 退出登录
+const logout = () => {
+  // 清除 localStorage 中的用户信息
+  localStorage.removeItem('token')
+  localStorage.removeItem('userInfo');
+
+  // 跳转到登录页面
+  router.push('/login');
+};
 </script>
 
 <style lang="less" scoped>

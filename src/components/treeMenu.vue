@@ -1,6 +1,6 @@
 <template>
   <template v-for="(item, index) in props.menuData">
-    <!--  有子菜单  -->
+    <!--  没有子菜单  -->
     <el-menu-item
         v-if="!item.children || item.children === 0"
         :index="`${props.index}-${item.meta.id}`"

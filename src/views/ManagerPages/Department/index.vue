@@ -1,97 +1,90 @@
-<template>
-    <div class="admin-department-management">
-        <div class="header">科室管理</div>
-        <div class="search-bar">
-            <input type="text" placeholder="搜索科室" v-model="searchQuery" />
-            <button @click="searchDepartments">搜索</button>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>选择</th>
-                    <th>科室名称</th>
-                    <th>科室编号</th>
-                    <th>负责人</th>
-                    <th>科室电话</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="department in filteredDepartments" :key="department.id">
-                    <td><input type="checkbox" v-model="selectedDepartments" :value="department.id" /></td>
-                    <td>{{ department.name }}</td>
-                    <td>{{ department.code }}</td>
-                    <td>{{ department.head }}</td>
-                    <td>{{ department.phone }}</td>
-                    <td>
-                        <button @click="editDepartment(department.id)">编辑</button>
-                        <button @click="deleteDepartment(department.id)">删除</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="pagination">
-            <!-- 分页组件，根据需要实现 -->
-        </div>
-        <button @click="addDepartment">新增科室</button>
-    </div>
-</template>
 
 
 <script setup>
-import { ref, computed } from 'vue';
+import {reactive, onMounted} from 'vue'
+import {getAllDepartmentInfo} from "../../../api/index.js"; // 这里需要你的接口
+import dayjs from 'dayjs'
 
-// 模拟科室数据
-const departments = ref([
-    { id: 1, name: '内科', code: 'NK01', head: '张医生', phone: '123-456-7890' },
-    { id: 2, name: '外科', code: 'WK02', head: '李医生', phone: '234-567-8901' },
-    { id: 3, name: '儿科', code: 'EK03', head: '王医生', phone: '345-678-9012' },
-    { id: 4, name: '妇科', code: 'FK04', head: '赵医生', phone: '456-789-0123' },
-    { id: 5, name: '眼科', code: 'YK05', head: '刘医生', phone: '567-890-1234' },
-    { id: 6, name: '耳鼻喉科', code: 'EBK06', head: '孙医生', phone: '678-901-2345' },
-]);
+// 分页数据
+const paginationData = reactive({
+  pageNumber: 1,
+  pageSize: 10
+})
 
-// 搜索框的绑定
-const searchQuery = ref('');
+// 列表数据
+const tableData = reactive({
+  list: [],
+  total: 0
+})
 
-// 根据搜索框过滤科室数据
-const filteredDepartments = computed(() => {
-    return departments.value.filter(department =>
-        department.name.includes(searchQuery.value) ||
-        department.code.includes(searchQuery.value)
-    );
-});
-
-// 存储选中的科室
-const selectedDepartments = ref([]);
-
-// 搜索科室
-function searchDepartments() {
-    console.log('搜索科室：', searchQuery.value);
+// 编辑操作
+const open = (row) => {
+  console.log('编辑科室:', row)
 }
 
-// 编辑科室
-function editDepartment(id) {
-    console.log('编辑科室，ID：', id);
-}
+// 加载科室列表
+const loadDepts = () => {
+  getAllDepartmentInfo(paginationData).then(({data}) => {
+    const {total, list} = data.data
+    console.log(list, "科室数据")
+    list.forEach(item => {
+      item.created_at = item.created_at
+          ? dayjs(item.created_at).format("YYYY-MM-DD")
+          : "N/A"; // 默认显示"N/A"或其他占位符
+    })
+    tableData.list = list;
+    tableData.total = total;
+  });
+};
 
-// 删除科室
-function deleteDepartment(id) {
-    console.log('删除科室，ID：', id);
-    // 删除逻辑
-    const index = departments.value.findIndex(department => department.id === id);
-    if (index !== -1) {
-        departments.value.splice(index, 1);
-    }
-}
+onMounted(() => {
+  loadDepts();
+})
 
-// 新增科室
-function addDepartment() {
-    console.log('新增科室');
-    // 可以弹出一个对话框来添加科室
-}
 </script>
 
+<template>
+  <p>这里是科室管理界面</p>
+  <el-table :data="tableData.list" style="width: 100%">
+    <el-table-column prop="id" label="ID"></el-table-column>
+    <el-table-column prop="name" label="科室名称"></el-table-column>
+    <el-table-column prop="head" label="科室主任"></el-table-column>
+    <el-table-column prop="phone_number" label="联系电话"></el-table-column>
+    <el-table-column prop="address" label="科室地址"></el-table-column>
+    <el-table-column prop="created_at" label="创建时间">
+      <template #default="scope">
+        <div class="flex-box">
+          <el-icon>
+            <Clock/>
+          </el-icon>
+          <span style="margin-left: 10px">{{ scope.row.created_at }}</span>
+        </div>
+      </template>
+    </el-table-column>
+    <el-table-column label="操作">
+      <template #default="scope">
+        <el-button type="primary" @click="open(scope.row)">编辑</el-button>
+      </template>
+    </el-table-column>
+  </el-table>
+
+  <!-- 分页部分 -->
+  <el-pagination
+      @current-change="(page) => {
+      paginationData.pageNumber = page;
+      loadDepts();
+    }"
+      @size-change="(size) => {
+      paginationData.pageSize = size;
+      loadDepts();
+    }"
+      :current-page="paginationData.pageNum"
+      :page-size="paginationData.pageSize"
+      :total="tableData.total"
+      layout="prev, pager, next, sizes, total"
+      :page-sizes="[10, 20, 50, 100]"
+  />
+</template>
 
 <style scoped>
 .admin-department-management {
