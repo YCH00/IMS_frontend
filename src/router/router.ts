@@ -2,20 +2,6 @@
 import {createRouter, createWebHistory} from 'vue-router';
 import {getDynamicRoutes, login} from "../api";
 import store from "../store"
-// 引入组件
-
-/*
-// 改为动态加载
-// import Main from "../views/Main.vue"
-// import AdminUser from "../views/ManagerPages/User/index.vue"
-// import AdminDoctor from "../views/ManagerPages/Doctor/index.vue"
-// import AdminDept from "../views/ManagerPages/Department/index.vue"
-// import AdminMedicine from "../views/ManagerPages/Medicine/index.vue"
-// import AdminMenu from "../views/ManagerPages/Menu/index.vue"
-// import AdminRole from "../views/ManagerPages/Role/index.vue"
-// import HomePage from "../views/HomePage/index.vue"
-*/
-
 
 // 静态路由
 const staticRoutes = [
