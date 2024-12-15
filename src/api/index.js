@@ -74,6 +74,143 @@ export const getAllDepartmentInfo = (data) => {
     return request.get('/departments', {params: data});
 }
 
-export const getAllDoctorInfo = (data) => {
-    return request.get('/doctors', {params: data});
+//-- 科室管理页面相关接口
+export const getAllDept = (data) => {
+    return request.get('/admin/getDept', data);
+}
+
+export const alterDept = (data, dept_id) => {
+    return request.put(`/admin/alterDept/${dept_id}`, data);
+}
+
+export const delDept = (dept_id) => {
+    return request.delete(`/admin/delDept/${dept_id}`);
+}
+
+export const addDept = (data) => {
+    return request.post(`/admin/addDept`, data);
+}
+
+//-- 医生管理页面相关接口
+export const getAllDoctor = (data) => {
+    return request.get('/admin/getDoctor',  data);
+}
+
+export const alterDoctor = (data, doctor_id) => {
+    return request.put(`/admin/alterDoctor/${doctor_id}`, data);
+}
+
+export const delDoctor = (doctor_id) => {
+    return request.delete(`/admin/delDoctor/${doctor_id}`);
+}
+
+export const addDoctor = (data) => {
+    return request.post(`/admin/addDector`, data);
+}
+
+//-- 用户管理相关接口
+export const getAllUser = (data) => {
+    return request.get('/admin/getUser', data);
+}
+
+export const alterUser = (data, user_id) => {
+    return request.put(`/admin/alterUser/${user_id}`, data);
+}
+
+export const delUser = (user_id) => {
+    return request.delete(`/admin/delUser/${user_id}`);
+}
+
+export const addUser = (data) => {
+    return request.post('/admin/addUser', data);
+}
+
+//-- 药品管理页面相关接口
+export const getAllDrug = (data) => {
+    return request.get('/admin/getDrug', data);
+}
+
+export const alterDrug = (data, drug_id) => {
+    return request.put(`/admin/alterDrug/${drug_id}`, data);
+}
+
+export const delDrug = (drug_id) => {
+    return request.delete(`/admin/delDrug/${drug_id}`);
+}
+
+export const addDrug = (data) => {
+    return request.post('/admin/addDrug', data);
+}
+
+//-- 检查项目管理页面相关接口
+export const getAllExam = (data) => {
+    return request.get('/admin/getExam', data);
+}
+
+export const alterExam = (data, exam_id) => {
+    return request.put(`/admin/alterExam/${exam_id}`, data);
+}
+
+export const delExam = (exam_id) => {
+    return request.delete(`/admin/delExam/${exam_id}`);
+}
+
+export const addExam = (data) => {
+    return request.post('/admin/addExam', data);
+}
+
+//-- 预约管理页面相关接口
+export const getAllAppoint = (data) => {
+    return request.get('/admin/getAppoint', data);
+}
+
+export const alterAppoint = (data, appoint_id) => {
+    return request.put(`/admin/alterAppoint/${appoint_id}`, data);
+}
+
+export const delAppoint = (appoint_id) => {
+    return request.delete(`/admin/delAppoint/${appoint_id}`);
+}
+
+export const addAppoint = (data) => {
+    return request.post('/admin/addAppoint', data);
+}
+
+//-- 管理员主页数据相关
+export const getAdminData = () => {
+    return request.get('/admin/view-data');
+}
+
+//-- 医生页面中的相关接口
+export const getCurPatient = (data) => {
+    return request.get('/doctor/getCurPatient', data);
+}
+
+export const getAllPatient = (data) => {
+    return request.get('/doctor/getAllPatient', data);
+}
+
+export const getDoctorProfile = () => {
+    return request.get('/doctor/getProfile');
+}
+
+export const alterDoctorProfile = (data) => {
+    return request.put('doctor/alterProfile', data);
+}
+
+//-- 用户页面中相关接口
+export const addPatientAppoint = () => {
+    return request.post('/patient/addAppoint');
+}
+
+export const getPatientAppoint = () => {
+    return request.get('/patient/getAppoint');
+}
+
+export const getMedicalRecord = (data) => {
+    return request.get('/patient/getMedicalRecord', data);
+}
+
+export const getExamRecord = (data) => {
+    return request.get('/patient/getExamRecord', data);
 }
