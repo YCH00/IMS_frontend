@@ -1,3 +1,6 @@
+import {showMessage} from "../utils/message.js";
+import router from "../router/router.ts";
+
 const state = {
     menuData: [], // 动态加载的菜单数据
     isCollapse: false, // 展开与收起
@@ -7,7 +10,7 @@ const state = {
 const mutations = {
     setMenuData(state, routes) {
         state.menuData = routes
-        console.log(state.menuData, "MenuData///")
+        console.log(state.menuData, "菜单数据")
     },
 
     collapseMenu(state) {
@@ -16,8 +19,13 @@ const mutations = {
 
     addMenu(state, payload) {
         // 对数据进行去重
-        if (state.selectMenu.findIndex(item => item.path === payload.path) === -1) {
-            state.selectMenu.push(payload)
+        if (state.selectMenu.length >= 10) {
+            showMessage("最多只能打开 10 个选项卡", "warning");
+        } else {
+            if (state.selectMenu.findIndex(item => item.path === payload.path) === -1) {
+                state.selectMenu.push(payload)
+            }
+            router.push(payload.path)
         }
     },
 

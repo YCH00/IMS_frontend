@@ -38,8 +38,7 @@ const store = useStore()
 // 点击菜单处理函数
 const handleClick = (item, active) => {
   store.commit('addMenu', item.meta)
-  router.push(item.meta.path)
-  console.log(item.meta.path, "path")
+  console.log(item, "item")
 }
 
 </script>

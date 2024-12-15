@@ -2,20 +2,6 @@
 import {createRouter, createWebHistory} from 'vue-router';
 import {getDynamicRoutes, login} from "../api";
 import store from "../store"
-// 引入组件
-
-/*
-// 改为动态加载
-// import Main from "../views/Main.vue"
-// import AdminUser from "../views/ManagerPages/User/index.vue"
-// import AdminDoctor from "../views/ManagerPages/Doctor/index.vue"
-// import AdminDept from "../views/ManagerPages/Department/index.vue"
-// import AdminMedicine from "../views/ManagerPages/Medicine/index.vue"
-// import AdminMenu from "../views/ManagerPages/Menu/index.vue"
-// import AdminRole from "../views/ManagerPages/Role/index.vue"
-// import HomePage from "../views/HomePage/index.vue"
-*/
-
 
 // 静态路由
 const staticRoutes = [
@@ -56,7 +42,6 @@ function formatRoutes(routes) {
 }
 
 
-
 // 创建路由实例
 const router = createRouter({
     history: createWebHistory(),
@@ -72,49 +57,49 @@ router.beforeEach(async (to, from, next) => {
     console.log(from, "Come From Where?"); // 打印来源路由信息
     console.log(to, "Go To Wherer");   // 打印目标路由信息
 
-    const token = localStorage.getItem('token'); // 从localStorage中获取token
+    const token = localStorage.getItem('pz_token'); // 从localStorage中获取token
+    const role = localStorage.getItem('role');
 
     // 允许未登录用户访问的白名单
     const whiteList = ['/login', '/register'];
 
     // 如果未登录且目标路由不在白名单中，则跳转到登录页
     if (!token && !whiteList.includes(to.path)) {
-        console.log("没有token, 跳转到登录界面")
         return next('/login');
     }
 
     // 如果未加载动态路由，向后端请求并添加
-    if (token && !router.hasDynamicRoutes) {
+    if (token && !router.hasDynamicRoutes && role) {
         try {
-            console.log("No dynamic routing loaded!!!")
-            getDynamicRoutes().then(({data}) => {
-                    const routesData = data.data.routes;
-                    // 格式化路由并添加到路由实例中
-                    const dynamicRoutes = formatRoutes(routesData);
-                    dynamicRoutes.forEach(route => {
-                        console.log(route, "Route")
-                        router.addRoute(route);
-                    });
-                    console.log(dynamicRoutes, "Dynamic Route Data");
-                    store.commit('setMenuData', dynamicRoutes);
-                    router.hasDynamicRoutes = true;
-                    return next({...to, replace: true});
-                }
-            )
+            console.log("No dynamic routing loaded!!!");
+            console.log(role, "roleType");
+
+            const {data} = await getDynamicRoutes(role); // 请求动态路由
+            const routesData = data.data.routes;
+            console.log(routesData, "路由数据")
+            // 格式化路由并添加到路由实例中
+            const dynamicRoutes = formatRoutes(routesData);
+            console.log(dynamicRoutes, "dynamicRoutes")
+            dynamicRoutes.forEach(route => {
+                console.log(route, "Route");
+                router.addRoute(route);
+            });
+
+            console.log(dynamicRoutes, "Dynamic Route Data");
+            store.commit('setMenuData', dynamicRoutes);
+            router.hasDynamicRoutes = true;
+
+            // 替换当前路由，确保动态路由加载完成后生效
+            return next({...to, replace: true});
         } catch (error) {
             console.error('获取动态路由失败', error);
             return next('/login'); // 失败时跳转到登录页
         }
-    } else {
-        const menuData = store.state.menu.menuData;
-        console.log(menuData, "Dynamic Route Data")
     }
-
 
     // 如果是静态路由或动态路由已加载，直接放行
     next();
 })
-
 
 // // 定义路由规则
 // const routes = [
