@@ -9,6 +9,7 @@ import Aura from '@primevue/themes/aura';
 import PrimeVue from "primevue/config";
 import 'primeicons/primeicons.css';
 import ToastService from "primevue/toastservice";
+import Dialog from 'primevue/dialog';
 
 import router from './router/router';
 import store from './store';
@@ -22,7 +23,7 @@ app.use(router);
 app.use(store);
 app.use(ToastService);
 app.use(ElementPlus);
-
+app.component('Dialog', Dialog);
 // 图标注册
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component);

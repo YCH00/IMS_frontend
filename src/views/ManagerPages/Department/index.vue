@@ -1,3 +1,5 @@
+
+
 <script setup>
 import {reactive, onMounted} from 'vue'
 import {getAllDepartmentInfo} from "../../../api/index.js"; // 这里需要你的接口
@@ -85,5 +87,124 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.admin-department-management {
+    width: 100%;
+    padding: 20px;
+    background-color: #f7f7f7;
+}
 
+.header {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.search-bar input {
+    width: 250px;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.search-bar button {
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #409eff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-bar button:hover {
+    background-color: #66b1ff;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+table th,
+table td {
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+    border-bottom: 1px solid #f2f2f2;
+}
+
+table th {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+table td {
+    color: #666;
+}
+
+table td button {
+    padding: 5px 10px;
+    background-color: #f0ad4e;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+table td button:hover {
+    background-color: #ec971f;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    padding: 6px 12px;
+    font-size: 14px;
+    background-color: #409eff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    margin: 0 5px;
+    cursor: pointer;
+}
+
+.pagination button:hover {
+    background-color: #66b1ff;
+}
+
+button {
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #4cae4c;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
 </style>

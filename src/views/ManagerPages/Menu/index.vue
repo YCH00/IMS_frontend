@@ -209,6 +209,10 @@ onMounted(() => {
   </el-dialog>
 </template>
 
-<style scoped>
 
+
+<style scoped>
+.menu-manager {
+  padding: 20px;
+}
 </style>

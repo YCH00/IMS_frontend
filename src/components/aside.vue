@@ -39,7 +39,7 @@ const handleClose = (key: string, keyPath: string[]) => {
 .aside-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 1200px;
 
   .logo-lg {
     font-size: 15px;

@@ -1,14 +1,14 @@
 <template>
-    <div class="home-page">
+    <div class="doctor-home">
         <div class="flex-box">
             <!-- 欢迎卡片 -->
             <Card class="welcome-card">
                 <template #title>
-                    <div class="welcome-card-title">欢迎管理员：</div>
+                    <div class="welcome-card-title">欢迎医生：</div>
                 </template>
                 <template #content>
                     <div>
-                        <h3>您好，管理员</h3>
+                        <h3>您好，蔡鑫</h3>
                         <p>当前时间：{{ currentTime }}</p>
                     </div>
                 </template>
@@ -33,7 +33,9 @@
             <!-- 折线图 -->
             <div class="line-charts-container">
                 <Card class="line-chart-card">
-                    <template #title>过去10天总就诊人数</template>
+                    <template #title>
+                        <div class="card-title">过去10天患者就诊趋势</div>
+                    </template>
                     <template #content>
                         <Line class="line-chart" :data="chartData" :options="chartOptions" />
                     </template>
@@ -42,7 +44,9 @@
             <!-- 待处理事项 -->
             <div class="pending-tasks-container">
                 <Card class="pending-tasks-card">
-                    <template #title>待处理事项</template>
+                    <template #title>
+                        <div class="card-title">待处理事项</div>
+                    </template>
                     <template #content>
                         <ul>
                             <li v-for="(task, index) in pendingTasks" :key="index" class="task-item">
@@ -57,7 +61,6 @@
     </div>
 </template>
 
-
 <script>
 import { ref, onMounted } from 'vue';
 import { Card } from 'primevue';
@@ -67,7 +70,7 @@ import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, CategoryScale, L
 ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
 
 export default {
-    name: 'AdminHome',
+    name: 'DoctorHome',
 
     components: {
         Line,
@@ -80,10 +83,10 @@ export default {
                 labels: ['2024-11-01', '2024-11-02', '2024-11-03', '2024-11-04', '2024-11-05', '2024-11-06', '2024-11-07', '2024-11-08', '2024-11-09', '2024-11-10'], // 日期标签
                 datasets: [
                     {
-                        label: '总就诊人数',
-                        data: [120, 150, 180, 170, 200, 210, 190, 220, 250, 230], // 假设的就诊人数数据
-                        borderColor: '#42A5F5',
-                        backgroundColor: 'rgba(66, 165, 245, 0.2)',
+                        label: '患者就诊人数',
+                        data: [100, 120, 150, 130, 160, 170, 160, 180, 200, 190], // 假设的就诊人数数据
+                        borderColor: '#66BB6A',
+                        backgroundColor: 'rgba(102, 187, 106, 0.2)',
                         fill: true,
                         tension: 0.4, // 曲线的平滑度
                     },
@@ -113,7 +116,7 @@ export default {
                 plugins: {
                     title: {
                         display: false,
-                        text: '过去10天总就诊人数',
+                        text: '过去10天患者就诊趋势',
                         font: {
                             size: 18,
                             weight: 'bold',
@@ -131,47 +134,33 @@ export default {
         // 数据展示卡片的数据
         const dataCards = ref([
             {
-                title: '当前挂号人数',
-                value: 120,  // 假设值
+                title: '今日预约患者数',
+                value: 30,  // 假设值
+                icon: 'pi pi-calendar',
+            },
+            {
+                title: '待处理报告数',
+                value: 5,  // 假设值
+                icon: 'pi pi-file',
+            },
+            {
+                title: '今日手术数量',
+                value: 2,  // 假设值
+                icon: 'pi pi-folder-open',
+            },
+            {
+                title: '今日会诊次数',
+                value: 10,  // 假设值
                 icon: 'pi pi-users',
-            },
-            {
-                title: '当前门诊医生数',
-                value: 15,  // 假设值
-                icon: 'pi pi-user-md',
-            },
-            {
-                title: '当日累计就诊人数',
-                value: 250,  // 假设值
-                icon: 'pi pi-stethoscope',
-            },
-            {
-                title: '当日医院总入账',
-                value: '¥10,000',  // 假设值
-                icon: 'pi pi-dollar',
             },
         ]);
 
         // 待处理事项
         const pendingTasks = ref([
-            { description: '检查病人挂号资料' },
-            { description: '安排医生会议' },
-            { description: '检查病房清洁情况' },
+            { description: '查看新患者病历' },
+            { description: '完成患者手术报告' },
+            { description: '会诊讨论' },
         ]);
-
-        // 过去10天的就诊人数数据（模拟数据）
-        const lineChartData = ref({
-            labels: ['10天前', '9天前', '8天前', '7天前', '6天前', '5天前', '4天前', '3天前', '2天前', '昨天'],  // 日期标签
-            datasets: [
-                {
-                    label: '总就诊人数',
-                    data: [200, 220, 210, 230, 250, 240, 220, 230, 260, 270],  // 假设的就诊人数数据
-                    borderColor: '#42A5F5',
-                    backgroundColor: 'rgba(66, 165, 245, 0.2)',
-                    fill: true,
-                },
-            ],
-        });
 
         // 更新当前时间
         const updateCurrentTime = () => {
@@ -189,7 +178,6 @@ export default {
             currentTime,
             dataCards,
             pendingTasks,
-            lineChartData,
         };
     },
 };
@@ -249,7 +237,7 @@ export default {
 
 .card .card-icon {
     font-size: 36px;
-    color: #42A5F5;
+    color: #66BB6A;
     margin-bottom: 10px;
 }
 
@@ -272,10 +260,9 @@ export default {
 
 .data-cards {
     display: flex;
-    justify-content:right;
+    justify-content: space-between;
     padding: 20px;
     width: 100%;
-    margin-left: 50px;
 }
 
 .data-card {
@@ -297,7 +284,7 @@ export default {
 
 .data-icon {
     font-size: 30px;
-    color: #42A5F5;
+    color: #66BB6A;
 }
 
 .data-content {
@@ -329,7 +316,7 @@ export default {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.line-chart-card .p-card-title {
+.line-chart-card .card-title {
     font-size: 20px;
     font-weight: bold;
     color: #333;
@@ -372,7 +359,7 @@ export default {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.pending-tasks-card .p-card-title {
+.pending-tasks-card .card-title {
     font-size: 20px;
     font-weight: bold;
     color: #333;
