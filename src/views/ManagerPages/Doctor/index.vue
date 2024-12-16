@@ -4,6 +4,8 @@
         <div class="search-bar">
             <input type="text" placeholder="输入工号进行搜索" v-model="searchQuery" />
             <button class="hover-btn" @click="searchStaff">搜索</button>
+            <!-- 将新增按钮放置在这里 -->
+            <button class="hover-btn" @click="openAddDialog">新增医务人员</button>
         </div>
         <table>
             <thead>
@@ -19,7 +21,7 @@
             </thead>
             <tbody>
                 <tr 
-                    v-for="staff in filteredStaff" 
+                    v-for="staff in paginatedStaff" 
                     :key="staff.id" 
                     class="staff-row"
                     @mouseover="hoveredRow = staff.id"
@@ -51,11 +53,18 @@
                 </tr>
             </tbody>
         </table>
-        <div class="pagination">
-            <!-- 分页组件可根据需求实现 -->
-        </div>
-        <button class="hover-btn" @click="openAddDialog">新增医务人员</button>
   
+        <!-- 分页组件 -->
+        <el-pagination
+            @current-change="handlePageChange"
+            @size-change="handleSizeChange"
+            :current-page="paginationData.pageNumber"
+            :page-size="paginationData.pageSize"
+            :total="staffList.length"
+            layout="prev, pager, next, sizes, total"
+            :page-sizes="[10, 20, 50, 100]"
+        />
+        
         <!-- 弹窗：新增/编辑医务人员 -->
         <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑医务人员' : '新增医务人员'">
             <el-form :model="currentStaff" label-width="80px">
@@ -88,21 +97,27 @@
   
   // 模拟医务人员数据
   const staffList = ref([
-    { id: '001', name: '张三', department: '内科', title: '主治医师', phone: '123-456-7890' },
-    { id: '002', name: '李四', department: '外科', title: '副主任医师', phone: '234-567-8901' },
-    { id: '003', name: '王五', department: '儿科', title: '主任医师', phone: '345-678-9012' },
-    { id: '004', name: '赵六', department: '妇科', title: '住院医师', phone: '456-789-0123' },
-    { id: '005', name: '孙七', department: '眼科', title: '主治医师', phone: '567-890-1234' },
-    { id: '006', name: '周八', department: '耳鼻喉科', title: '主任医师', phone: '678-901-2345' }
+  { id: '001', name: '张三', department: '内科', title: '主治医师', phone: '123-456-7890' },
+  { id: '002', name: '李四', department: '外科', title: '副主任医师', phone: '234-567-8901' },
+  { id: '003', name: '王五', department: '儿科', title: '主任医师', phone: '345-678-9012' },
+  { id: '004', name: '赵六', department: '妇科', title: '住院医师', phone: '456-789-0123' },
+  { id: '005', name: '孙七', department: '眼科', title: '主治医师', phone: '567-890-1234' },
+  { id: '006', name: '周八', department: '耳鼻喉科', title: '主任医师', phone: '678-901-2345' }
   ]);
   
   const searchQuery = ref('');
   const hoveredRow = ref(null);
   
   const filteredStaff = computed(() => {
-    return staffList.value.filter(staff =>
-        staff.id.includes(searchQuery.value.trim())
-    );
+  return staffList.value.filter(staff =>
+    staff.id.includes(searchQuery.value.trim())
+  );
+  });
+  
+  // 分页数据
+  const paginationData = ref({
+  pageNumber: 1,
+  pageSize: 10
   });
   
   const selectedStaff = ref([]);
@@ -110,141 +125,168 @@
   const currentStaff = ref({ id: '', name: '', department: '', title: '', phone: '' });
   const isEdit = ref(false);
   
+  // 计算分页后的医务人员列表
+  const paginatedStaff = computed(() => {
+  const start = (paginationData.value.pageNumber - 1) * paginationData.value.pageSize;
+  const end = start + paginationData.value.pageSize;
+  return filteredStaff.value.slice(start, end);
+  });
+  
+  // 搜索医务人员
   const searchStaff = () => {
-    console.log('搜索工号:', searchQuery.value);
+  console.log('搜索工号:', searchQuery.value);
   };
   
+  // 打开新增医务人员弹窗
   const openAddDialog = () => {
-    isEdit.value = false;
-    currentStaff.value = { id: '', name: '', department: '', title: '', phone: '' };
-    dialogVisible.value = true;
+  isEdit.value = false;
+  currentStaff.value = { id: '', name: '', department: '', title: '', phone: '' };
+  dialogVisible.value = true;
   };
   
+  // 打开编辑医务人员弹窗
   const openEditDialog = (staff) => {
-    isEdit.value = true;
-    currentStaff.value = { ...staff };
-    dialogVisible.value = true;
+  isEdit.value = true;
+  currentStaff.value = { ...staff };
+  dialogVisible.value = true;
   };
   
+  // 保存医务人员信息
   const saveStaff = () => {
-    if (isEdit.value) {
-        const index = staffList.value.findIndex(s => s.id === currentStaff.value.id);
-        if (index !== -1) {
-            staffList.value[index] = { ...currentStaff.value };
-        }
-    } else {
-        staffList.value.push({ ...currentStaff.value });
+  if (isEdit.value) {
+    const index = staffList.value.findIndex(s => s.id === currentStaff.value.id);
+    if (index !== -1) {
+      staffList.value[index] = { ...currentStaff.value };
     }
-    dialogVisible.value = false;
+  } else {
+    staffList.value.push({ ...currentStaff.value });
+  }
+  dialogVisible.value = false;
   };
   
+  // 删除医务人员
   const deleteStaff = (id) => {
-    console.log('删除医务人员，工号:', id);
-    const index = staffList.value.findIndex(staff => staff.id === id);
-    if (index !== -1) {
-        staffList.value.splice(index, 1);
-    }
+  console.log('删除医务人员，工号:', id);
+  const index = staffList.value.findIndex(staff => staff.id === id);
+  if (index !== -1) {
+    staffList.value.splice(index, 1);
+  }
+  };
+  
+  // 分页页码变化
+  const handlePageChange = (page) => {
+  paginationData.value.pageNumber = page;
+  };
+  
+  // 分页每页条数变化
+  const handleSizeChange = (size) => {
+  paginationData.value.pageSize = size;
   };
   </script>
   
   <style scoped>
   .admin-staff-management {
-    width: 100%;
-    padding: 20px;
-    background-color: #f7f7f7;
+  width: 100%;
+  padding: 20px;
+  background-color: #f7f7f7;
   }
   
   .header {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #333;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
   }
   
   .search-bar {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
   }
   
   .search-bar input {
-    width: 250px;
-    padding: 8px 12px;
-    font-size: 14px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-right: 10px;
+  width: 250px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
   }
   
   .search-bar button,
   .hover-btn {
-    padding: 8px 16px;
-    font-size: 14px;
-    background-color: #409eff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 8px 16px;
+  font-size: 14px;
+  background-color: #409eff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  /* 按钮之间的间隔 */
+  .search-bar button + .hover-btn {
+  margin-left: 10px;  /* 增加间距 */
   }
   
   .hover-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
   
   table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-    background-color: white;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
   
   table th,
   table td {
-    padding: 12px;
-    text-align: center;
-    font-size: 14px;
-    border-bottom: 1px solid #f2f2f2;
+  padding: 12px;
+  text-align: center;
+  font-size: 14px;
+  border-bottom: 1px solid #f2f2f2;
   }
   
   table th {
-    background-color: #f5f5f5;
-    color: #333;
+  background-color: #f5f5f5;
+  color: #333;
   }
   
   .staff-row {
-    transition: background-color 0.3s, box-shadow 0.3s;
+  transition: background-color 0.3s, box-shadow 0.3s;
   }
   
   .staff-row:hover {
-    background-color: #f0f9ff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: #f0f9ff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   }
   
   .dialog-footer {
-    text-align: right;
+  text-align: right;
   }
   
   .action-btn {
-    transition: transform 0.2s ease, background-color 0.3s ease;
+  transition: transform 0.2s ease, background-color 0.3s ease;
   }
   
   .action-btn:hover {
-    transform: scale(1.1);
+  transform: scale(1.1);
   }
   
   .delete-btn {
-    background-color: #ff4d4f;
-    color: white;
-    border: none;
-    border-radius: 4px;
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 4px;
   }
   
   .delete-btn:hover {
-    background-color: #d9363e;
+  background-color: #d9363e;
   }
   </style>
   

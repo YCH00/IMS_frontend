@@ -1,125 +1,295 @@
 <template>
     <div class="appointment-management">
-      <!-- 添加预约按钮 -->
-      <el-button type="primary" class="add-appointment-button" @click="showAddDialog">添加预约</el-button>
+      <!-- 标题 -->
+      <div class="header">用户预约管理</div>
+  
+      <!-- 搜索栏 -->
+      <div class="search-bar">
+        <input type="text" placeholder="输入挂号ID进行搜索" v-model="searchQuery" />
+        <button class="hover-btn" @click="searchAppointment">搜索</button>
+        <!-- 新增按钮 -->
+        <button class="hover-btn" @click="showAddDialog">新增预约</button>
+      </div>
   
       <!-- 预约表格 -->
-      <el-table :data="appointments" style="width: 100%" border>
-        <el-table-column prop="patientId" label="患者ID" width="100"></el-table-column>
-        <el-table-column prop="patient" label="患者姓名" width="180"></el-table-column>
-        <el-table-column prop="doctorId" label="医生ID" width="100"></el-table-column>
-        <el-table-column prop="doctor" label="医生姓名"></el-table-column>
-        <el-table-column prop="date" label="预约日期"></el-table-column>
-        <el-table-column prop="time" label="预约时间"></el-table-column>
-        <el-table-column label="操作" width="180">
-          <template v-slot="scope">
-            <el-button size="mini" @click="editAppointment(scope.$index, scope.row)">编辑</el-button>
-            <el-button size="mini" type="danger" @click="deleteAppointment(scope.$index, scope.row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <table>
+        <thead>
+          <tr>
+            <th>选择</th>
+            <th>挂号ID</th>
+            <th>患者ID</th>
+            <th>患者姓名</th>
+            <th>医生ID</th>
+            <th>医生姓名</th>
+            <th>预约时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            v-for="appointment in paginatedAppointments" 
+            :key="appointment.registrationId" 
+            class="appointment-row"
+            @mouseover="hoveredRow = appointment.registrationId"
+            @mouseleave="hoveredRow = null"
+          >
+            <td><input type="checkbox" v-model="selectedAppointments" :value="appointment.registrationId" /></td>
+            <td>{{ appointment.registrationId }}</td>
+            <td>{{ appointment.patientId }}</td>
+            <td>{{ appointment.patient }}</td>
+            <td>{{ appointment.doctorId }}</td>
+            <td>{{ appointment.doctor }}</td>
+            <td>{{ appointment.appointmentTime }}</td>
+            <td>
+              <el-button 
+                size="mini" 
+                class="action-btn edit-btn" 
+                @click="editAppointment(appointment)"
+              >
+                编辑
+              </el-button>
+              <el-button 
+                size="mini" 
+                type="danger" 
+                class="action-btn delete-btn"
+                @click="deleteAppointment(appointment.registrationId)"
+              >
+                删除
+              </el-button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
   
-      <!-- 添加预约对话框 -->
-      <el-dialog :visible.sync="addDialogVisible" title="添加预约">
-        <el-form :model="newAppointment">
+      <!-- 分页组件 -->
+      <el-pagination
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+        :current-page="paginationData.pageNumber"
+        :page-size="paginationData.pageSize"
+        :total="appointments.length"
+        layout="prev, pager, next, sizes, total"
+        :page-sizes="[10, 20, 50, 100]"
+      />
+  
+      <!-- 弹窗：新增/编辑预约 -->
+      <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑预约' : '新增预约'">
+        <el-form :model="currentAppointment" label-width="80px">
+          <el-form-item label="挂号ID">
+            <el-input v-model="currentAppointment.registrationId" :disabled="isEdit" placeholder="请输入挂号ID" />
+          </el-form-item>
           <el-form-item label="患者ID">
-            <el-select v-model="newAppointment.patientId" placeholder="请选择患者">
-              <el-option v-for="patient in patients" :key="patient.id" :label="patient.name" :value="patient.id"></el-option>
-            </el-select>
+            <el-input v-model="currentAppointment.patientId" placeholder="请输入患者ID" />
           </el-form-item>
           <el-form-item label="患者姓名">
-            <el-input v-model="newAppointment.patient" placeholder="患者姓名" readonly></el-input>
+            <el-input v-model="currentAppointment.patient" placeholder="请输入患者姓名" />
           </el-form-item>
           <el-form-item label="医生ID">
-            <el-select v-model="newAppointment.doctorId" placeholder="请选择医生">
-              <el-option v-for="doctor in doctors" :key="doctor.id" :label="doctor.name" :value="doctor.id"></el-option>
-            </el-select>
+            <el-input v-model="currentAppointment.doctorId" placeholder="请输入医生ID" />
           </el-form-item>
           <el-form-item label="医生姓名">
-            <el-input v-model="newAppointment.doctor" placeholder="医生姓名" readonly></el-input>
+            <el-input v-model="currentAppointment.doctor" placeholder="请输入医生姓名" />
           </el-form-item>
-          <el-form-item label="日期">
-            <el-date-picker v-model="newAppointment.date" type="date" placeholder="选择日期"></el-date-picker>
-          </el-form-item>
-          <el-form-item label="时间">
-            <el-time-picker v-model="newAppointment.time" placeholder="选择时间"></el-time-picker>
+          <el-form-item label="预约时间">
+            <el-date-picker v-model="currentAppointment.appointmentTime" type="datetime" placeholder="选择预约时间"></el-date-picker>
           </el-form-item>
         </el-form>
         <div slot="footer" class="dialog-footer">
-          <el-button @click="addDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="addAppointment">确定</el-button>
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveAppointment">确认</el-button>
         </div>
       </el-dialog>
     </div>
   </template>
   
-  <script>
-  import { ref } from 'vue';
+  <script setup>
+  import { ref, computed } from 'vue';
   
-  export default {
-    setup() {
-      const appointments = ref([
-        { patientId: 1, patient: '张三', doctorId: 2, doctor: '李医生', date: '2024-01-01', time: '09:00-10:00' },
-        { patientId: 2, patient: '李四', doctorId: 3, doctor: '王医生', date: '2024-01-02', time: '10:00-11:00' },
-      ]);
+  // 模拟预约数据
+  const appointments = ref([
+    { registrationId: 'A001', patientId: 'P001', patient: '张三', doctorId: 'D001', doctor: '李医生', appointmentTime: '2024-01-01 09:00' },
+    { registrationId: 'A002', patientId: 'P002', patient: '李四', doctorId: 'D002', doctor: '王医生', appointmentTime: '2024-01-02 10:00' },
+  ]);
   
-      const patients = ref([
-        { id: 1, name: '张三' },
-        { id: 2, name: '李四' },
-      ]);
+  const searchQuery = ref('');
+  const hoveredRow = ref(null);
+  const selectedAppointments = ref([]);
+  const dialogVisible = ref(false);
+  const currentAppointment = ref({ registrationId: '', patientId: '', patient: '', doctorId: '', doctor: '', appointmentTime: '' });
+  const isEdit = ref(false);
   
-      const doctors = ref([
-        { id: 2, name: '李医生' },
-        { id: 3, name: '王医生' },
-      ]);
+  // 分页数据
+  const paginationData = ref({
+    pageNumber: 1,
+    pageSize: 10
+  });
   
-      const newAppointment = ref({ patientId: '', patient: '', doctorId: '', doctor: '', date: '', time: '' });
-      const addDialogVisible = ref(false);
+  // 计算过滤后的预约列表
+  const filteredAppointments = computed(() => {
+    return appointments.value.filter(appointment =>
+      appointment.registrationId.includes(searchQuery.value.trim())
+    );
+  });
   
-      const showAddDialog = () => {
-        newAppointment.value = { patientId: '', patient: '', doctorId: '', doctor: '', date: '', time: '' };
-        addDialogVisible.value = true;
-      };
+  // 计算分页后的预约列表
+  const paginatedAppointments = computed(() => {
+    const start = (paginationData.value.pageNumber - 1) * paginationData.value.pageSize;
+    const end = start + paginationData.value.pageSize;
+    return filteredAppointments.value.slice(start, end);
+  });
   
-      const addAppointment = () => {
-        appointments.value.push({ ...newAppointment.value });
-        addDialogVisible.value = false;
-      };
+  // 搜索预约
+  const searchAppointment = () => {
+    console.log('搜索挂号ID:', searchQuery.value);
+  };
   
-      const editAppointment = (index, row) => {
-        newAppointment.value = { ...row };
-        addDialogVisible.value = true;
-      };
+  // 打开新增预约对话框
+  const showAddDialog = () => {
+    isEdit.value = false;
+    currentAppointment.value = { registrationId: '', patientId: '', patient: '', doctorId: '', doctor: '', appointmentTime: '' };
+    dialogVisible.value = true;
+  };
   
-      const deleteAppointment = (index, row) => {
-        appointments.value.splice(index, 1);
-      };
+  // 打开编辑预约对话框
+  const editAppointment = (appointment) => {
+    isEdit.value = true;
+    currentAppointment.value = { ...appointment };
+    dialogVisible.value = true;
+  };
   
-      return {
-        appointments,
-        patients,
-        doctors,
-        newAppointment,
-        addDialogVisible,
-        showAddDialog,
-        addAppointment,
-        editAppointment,
-        deleteAppointment,
-      };
-    },
+  // 保存预约
+  const saveAppointment = () => {
+    if (isEdit.value) {
+      const index = appointments.value.findIndex(a => a.registrationId === currentAppointment.value.registrationId);
+      if (index !== -1) {
+        appointments.value[index] = { ...currentAppointment.value };
+      }
+    } else {
+      appointments.value.push({ ...currentAppointment.value });
+    }
+    dialogVisible.value = false;
+  };
+  
+  // 删除预约
+  const deleteAppointment = (registrationId) => {
+    const index = appointments.value.findIndex(a => a.registrationId === registrationId);
+    if (index !== -1) {
+      appointments.value.splice(index, 1);
+    }
+  };
+  
+  // 分页页码变化
+  const handlePageChange = (page) => {
+    paginationData.value.pageNumber = page;
+  };
+  
+  // 分页每页条数变化
+  const handleSizeChange = (size) => {
+    paginationData.value.pageSize = size;
   };
   </script>
   
   <style scoped>
   .appointment-management {
     padding: 20px;
+    background-color: #f7f7f7;
   }
   
-  .add-appointment-button {
-    margin-bottom: 20px; /* 添加空行 */
+  .header {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .search-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .search-bar input {
+    width: 250px;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+  }
+  
+  .search-bar button,
+  .hover-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #409eff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .search-bar button + .hover-btn {
+    margin-left: 10px;
+  }
+  
+  .hover-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  table th,
+  table td {
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+    border-bottom: 1px solid #f2f2f2;
+  }
+  
+  table th {
+    background-color: #f5f5f5;
+    color: #333;
+  }
+  
+  .appointment-row {
+    transition: background-color 0.3s, box-shadow 0.3s;
+  }
+  
+  .appointment-row:hover {
+    background-color: #f0f9ff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   }
   
   .dialog-footer {
     text-align: right;
   }
+  
+  .action-btn {
+    transition: transform 0.2s ease, background-color 0.3s ease;
+  }
+  
+  .action-btn:hover {
+    transform: scale(1.1);
+  }
+  
+  .delete-btn {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+    border-radius: 4px;
+  }
+  
+  .delete-btn:hover {
+    background-color: #d9363e;
+  }
   </style>
+  
