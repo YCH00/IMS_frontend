@@ -69,10 +69,6 @@ export const deleteMenu = (menuId) => {
     return request.delete(`/menus/${menuId}`);
 };
 
-// -------------------- 科室管理路由 --------------------
-export const getAllDepartmentInfo = (data) => {
-    return request.get('/departments', {params: data});
-}
 
 //-- 科室管理页面相关接口
 export const getAllDept = (data) => {

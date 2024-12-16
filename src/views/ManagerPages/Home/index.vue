@@ -128,13 +128,36 @@ export default {
             chartOptions: {
                 responsive: true,
                 maintainAspectRatio: false,
-                aspectRatio: 2,
+                interaction: {
+                    mode: 'index', // 使竖线生效
+                    intersect: false, // 鼠标不需要完全悬停在点上
+                },
+                plugins: {
+                    tooltip: {
+                        enabled: true, // 启用工具提示
+                        mode: 'index', // 工具提示显示当前x轴的所有数据
+                        intersect: false,
+                        callbacks: {
+                            label: function (context) {
+                                // 格式化工具提示的显示文本
+                                return `${context.dataset.label}: ${context.raw}`;
+                            },
+                        },
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top', // 图例位置
+                    },
+                },
                 scales: {
                     x: {
                         beginAtZero: true,
                         title: {
                             display: true,
                             text: '日期',
+                        },
+                        grid: {
+                            drawOnChartArea: true, // 禁止绘制网格线
                         },
                     },
                     y: {
@@ -145,18 +168,8 @@ export default {
                         },
                     },
                 },
-                plugins: {
-                    title: {
-                        display: false,
-                        text: '过去10天总就诊人数',
-                        font: {
-                            size: 18,
-                            weight: 'bold',
-                        },
-                    },
-                },
             },
-
+            
             // 新增的数据属性
             showAddModal: false,
             showEditModal: false,

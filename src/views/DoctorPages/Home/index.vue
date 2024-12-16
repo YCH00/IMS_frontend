@@ -41,21 +41,55 @@
                     </template>
                 </Card>
             </div>
-            <!-- 待处理事项 -->
-            <div class="pending-tasks-container">
+           <!-- 待处理事项 -->
+           <div class="pending-tasks-container">
                 <Card class="pending-tasks-card">
                     <template #title>
-                        <div class="card-title">待处理事项</div>
+                        <!-- 在右上角新增一个加号按钮 -->
+                        <div class="card-title"
+                            style="display:flex; justify-content: space-between; align-items:center;">
+                            <span>待处理事项</span>
+                            <button class="add-task-btn" @click="showAddModal = true">
+                                <i class="pi pi-plus"></i>
+                            </button>
+                        </div>
                     </template>
                     <template #content>
                         <ul>
-                            <li v-for="(task, index) in pendingTasks" :key="index" class="task-item">
+                            <!-- 点击任务时弹出编辑弹窗 -->
+                            <li v-for="(task, index) in pendingTasks" :key="index" class="task-item"
+                                @click="openEditModal(task, index)">
                                 <i class="pi pi-bell"></i>
                                 <span>{{ task.description }}</span>
                             </li>
                         </ul>
                     </template>
                 </Card>
+            </div>
+        </div>
+
+        <!-- 新增待办事项的弹窗 -->
+        <div v-if="showAddModal" class="modal-overlay" @click.self="closeAddModal">
+            <div class="modal-content">
+                <h3>新增待办事项</h3>
+                <input v-model="newTaskDescription" type="text" placeholder="输入新的待办事项..." class="modal-input" />
+                <div class="modal-actions">
+                    <button class="modal-btn" @click="addTask">确认</button>
+                    <button class="modal-btn cancel" @click="closeAddModal">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 编辑待办事项的弹窗 -->
+        <div v-if="showEditModal" class="modal-overlay" @click.self="closeEditModal">
+            <div class="modal-content">
+                <h3>编辑待办事项</h3>
+                <input v-model="currentEditingTaskDescription" type="text" class="modal-input" />
+                <div class="modal-actions">
+                    <button class="modal-btn" @click="updateTask">保存修改</button>
+                    <button class="modal-btn delete" @click="deleteTask">删除</button>
+                    <button class="modal-btn cancel" @click="closeEditModal">取消</button>
+                </div>
             </div>
         </div>
     </div>
@@ -96,13 +130,36 @@ export default {
             chartOptions: {
                 responsive: true,
                 maintainAspectRatio: false,
-                aspectRatio: 2, // 根据需要设置合适的宽高比
+                interaction: {
+                    mode: 'index', // 使竖线生效
+                    intersect: false, // 鼠标不需要完全悬停在点上
+                },
+                plugins: {
+                    tooltip: {
+                        enabled: true, // 启用工具提示
+                        mode: 'index', // 工具提示显示当前x轴的所有数据
+                        intersect: false,
+                        callbacks: {
+                            label: function (context) {
+                                // 格式化工具提示的显示文本
+                                return `${context.dataset.label}: ${context.raw}`;
+                            },
+                        },
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top', // 图例位置
+                    },
+                },
                 scales: {
                     x: {
                         beginAtZero: true,
                         title: {
                             display: true,
                             text: '日期',
+                        },
+                        grid: {
+                            drawOnChartArea: true, // 禁止绘制网格线
                         },
                     },
                     y: {
@@ -113,17 +170,14 @@ export default {
                         },
                     },
                 },
-                plugins: {
-                    title: {
-                        display: false,
-                        text: '过去10天患者就诊趋势',
-                        font: {
-                            size: 18,
-                            weight: 'bold',
-                        },
-                    },
-                },
             },
+            
+            // 新增的数据属性
+            showAddModal: false,
+            showEditModal: false,
+            newTaskDescription: '',
+            currentEditingTaskIndex: null,
+            currentEditingTaskDescription: '',
         };
     },
 
@@ -180,6 +234,41 @@ export default {
             pendingTasks,
         };
     },
+    methods: {
+        closeAddModal() {
+            this.showAddModal = false;
+            this.newTaskDescription = '';
+        },
+        addTask() {
+            if (this.newTaskDescription.trim() !== '') {
+                this.pendingTasks.push({ description: this.newTaskDescription });
+                this.newTaskDescription = '';
+                this.showAddModal = false;
+            }
+        },
+        openEditModal(task, index) {
+            this.currentEditingTaskIndex = index;
+            this.currentEditingTaskDescription = task.description;
+            this.showEditModal = true;
+        },
+        closeEditModal() {
+            this.showEditModal = false;
+            this.currentEditingTaskIndex = null;
+            this.currentEditingTaskDescription = '';
+        },
+        updateTask() {
+            if (this.currentEditingTaskIndex !== null && this.currentEditingTaskDescription.trim() !== '') {
+                this.pendingTasks[this.currentEditingTaskIndex].description = this.currentEditingTaskDescription;
+                this.closeEditModal();
+            }
+        },
+        deleteTask() {
+            if (this.currentEditingTaskIndex !== null) {
+                this.pendingTasks.splice(this.currentEditingTaskIndex, 1);
+                this.closeEditModal();
+            }
+        },
+    },
 };
 </script>
 
@@ -211,11 +300,12 @@ export default {
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
     transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* 增加阴影效果 */
 }
 
 .card {
@@ -246,6 +336,12 @@ export default {
     height: 200px;
     text-align: center;
     margin: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.welcome-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* 增加阴影效果 */
 }
 
 .welcome-card h3 {
@@ -280,6 +376,12 @@ export default {
     align-items: center;
     text-align: center;
     padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.data-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* 增加阴影效果 */
 }
 
 .data-icon {
@@ -307,13 +409,18 @@ export default {
 }
 
 .line-chart-card {
-    
     margin: 20px auto;
     margin-left: 20px;
     padding: 20px;
     background-color: #fff;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.line-chart-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* 增加阴影效果 */
 }
 
 .line-chart-card .card-title {
@@ -325,38 +432,33 @@ export default {
 
 .line-chart {
     width: 100%;
-    /* 使折线图适应父容器宽度 */
     height: 400px;
-    /* 设置折线图的固定高度 */
 }
 
-/* 待处理事项列表 */
 .pending-tasks-container {
     display: flex;
     flex-direction: column;
-    /* 让子元素垂直排列 */
     justify-content: space-between;
-    /* 子元素垂直排列时，自动填充剩余空间 */
     align-items: center;
-    /* 水平居中所有子元素 */
     width: 100%;
 }
 
 .pending-tasks-card {
     flex-grow: 1;
-    /* 让卡片占据剩余空间 */
     width: 80%;
-    /* 卡片的宽度占父容器的 80% */
     max-width: 900px;
-    /* 卡片的最大宽度 */
     margin-top: 20px;
-    /* 卡片上方的间距 */
     margin-bottom: 20px;
-    /* 卡片下方的间距 */
     background-color: #fff;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pending-tasks-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* 增加阴影效果 */
 }
 
 .pending-tasks-card .card-title {
@@ -380,14 +482,137 @@ export default {
 
 .pending-tasks-card .task-item i {
     margin-right: 10px;
-    /* 图标和文本之间的间距 */
     font-size: 18px;
     color: #ff9900;
-    /* 设置图标颜色 */
 }
 
 .pending-tasks-card .task-item span {
     font-size: 16px;
     color: #333;
+    position: relative;
+    display: inline-block;
+    transition: color 0.3s ease;
 }
+
+/* 待处理事项新增下划线功能 */
+.pending-tasks-card .task-item span::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px; /* 下划线距离文本底部的距离 */
+    width: 0;
+    height: 2px;
+    background-color: #42A5F5;
+    transition: width 0.3s ease; /* 添加平滑过渡 */
+}
+
+/* 鼠标悬停时下划线动画 */
+.pending-tasks-card .task-item:hover span::after {
+    width: 100%; /* 下划线在悬停时从 0 到 100% */
+}
+
+/* 鼠标悬停时，文本颜色也可变更，增加交互感 */
+.pending-tasks-card .task-item:hover span {
+    color: #42A5F5;
+}
+
+/* 新增的按钮样式 */
+.add-task-btn {
+    background-color: #42A5F5;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    color: #fff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.add-task-btn:hover {
+    background-color: #1e88e5;
+}
+
+/* 弹窗样式 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 10px;
+    width: 300px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-btn {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    color: #fff;
+    background-color: #42A5F5;
+}
+
+.modal-btn:hover {
+    background-color: #1e88e5;
+}
+
+.modal-btn.cancel {
+    background-color: #999;
+}
+
+.modal-btn.delete {
+    background-color: #d9534f;
+}
+
+/* 弹窗动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
 </style>
