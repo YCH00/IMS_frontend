@@ -97,9 +97,10 @@
 
 <script>
 import { ref, onMounted } from 'vue';
-import { Card } from 'primevue';
+// import { Card } from 'primevue';
 import { Line } from 'vue-chartjs';
 import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement } from 'chart.js';
+import { getAdminData } from "../../../api/index.js"; // 这里需要你的接口
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
 
@@ -169,7 +170,7 @@ export default {
                     },
                 },
             },
-            
+
             // 新增的数据属性
             showAddModal: false,
             showEditModal: false,
