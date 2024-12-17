@@ -72,7 +72,7 @@ export const deleteMenu = (menuId) => {
 
 //-- 科室管理页面相关接口
 export const getAllDept = (data) => {
-    return request.get('/admin/getDept', data);
+    return request.get('/admin/getDept', {params: data});
 }
 
 export const alterDept = (data, dept_id) => {
@@ -87,9 +87,13 @@ export const addDept = (data) => {
     return request.post(`/admin/addDept`, data);
 }
 
+export const getDoctorsByDept = (dept_id) => {
+    return request.get(`/admin/getDoctorsByDept/${dept_id}`);
+}
+
 //-- 医生管理页面相关接口
 export const getAllDoctor = (data) => {
-    return request.get('/admin/getDoctor',  data);
+    return request.get('/admin/getDoctor', {params: data});
 }
 
 export const alterDoctor = (data, doctor_id) => {
@@ -101,7 +105,7 @@ export const delDoctor = (doctor_id) => {
 }
 
 export const addDoctor = (data) => {
-    return request.post(`/admin/addDector`, data);
+    return request.post(`/admin/addDoctor`, data);
 }
 
 //-- 用户管理相关接口
@@ -123,8 +127,12 @@ export const addUser = (data) => {
 
 //-- 药品管理页面相关接口
 export const getAllDrug = (data) => {
-    return request.get('/admin/getDrug', data);
+    return request.get('/admin/getDrug', {params: data});
 }
+
+export const getDrugById = (drug_id) => {
+    return request.get(`/admin/drugDetail/${drug_id}`);
+};
 
 export const alterDrug = (data, drug_id) => {
     return request.put(`/admin/alterDrug/${drug_id}`, data);
