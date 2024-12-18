@@ -110,7 +110,7 @@ export const addDoctor = (data) => {
 
 //-- 用户管理相关接口
 export const getAllUser = (data) => {
-    return request.get('/admin/getUser', data);
+    return request.get('/admin/getUser', {params: data});
 }
 
 export const alterUser = (data, user_id) => {
@@ -148,7 +148,7 @@ export const addDrug = (data) => {
 
 //-- 检查项目管理页面相关接口
 export const getAllExam = (data) => {
-    return request.get('/admin/getExam', data);
+    return request.get('/admin/getExam', {params:data});
 }
 
 export const alterExam = (data, exam_id) => {
@@ -165,7 +165,7 @@ export const addExam = (data) => {
 
 //-- 预约管理页面相关接口
 export const getAllAppoint = (data) => {
-    return request.get('/admin/getAppoint', data);
+    return request.get('/admin/getAppoint', {params:data});
 }
 
 export const alterAppoint = (data, appoint_id) => {
@@ -187,11 +187,11 @@ export const getAdminData = () => {
 
 //-- 医生页面中的相关接口
 export const getCurPatient = (data) => {
-    return request.get('/doctor/getCurPatient', data);
+    return request.get('/doctor/getCurPatient', {params:data});
 }
 
 export const getAllPatient = (data) => {
-    return request.get('/doctor/getAllPatient', data);
+    return request.get('/doctor/getAllPatient', {params:data});
 }
 
 export const getDoctorProfile = () => {
@@ -212,9 +212,9 @@ export const getPatientAppoint = () => {
 }
 
 export const getMedicalRecord = (data) => {
-    return request.get('/patient/getMedicalRecord', data);
+    return request.get('/patient/getMedicalRecord', {params:data});
 }
 
 export const getExamRecord = (data) => {
-    return request.get('/patient/getExamRecord', data);
+    return request.get('/patient/getExamRecord', {params:data});
 }

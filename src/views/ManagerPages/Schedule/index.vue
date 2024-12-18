@@ -1,6 +1,9 @@
 <template>
     <div class="doctor-schedule">
+      <!-- 标题 -->
       <div class="header">医生排班管理</div>
+  
+      <!-- 搜索栏 -->
       <div class="search-bar">
         <input
           type="text"
@@ -17,6 +20,7 @@
         <thead>
           <tr>
             <th>选择</th>
+            <th>排班ID</th>
             <th>医生</th>
             <th>日期</th>
             <th>时间</th>
@@ -31,9 +35,12 @@
             @mouseover="hoveredRow = schedule.id"
             @mouseleave="hoveredRow = null"
           >
-            <td><input type="checkbox" v-model="selectedSchedules" :value="schedule.id" /></td>
+            <td>
+              <input type="checkbox" v-model="selectedSchedules" :value="schedule.id" />
+            </td>
+            <td>{{ schedule.registrationId }}</td>
             <td>{{ schedule.doctor }}</td>
-            <td>{{ schedule.date }}</td>
+            <td>{{ formatDate(schedule.date) }}</td>
             <td>{{ schedule.time }}</td>
             <td>
               <el-button
@@ -65,13 +72,30 @@
         :total="filteredSchedules.length"
         layout="prev, pager, next, sizes, total"
         :page-sizes="[10, 20, 50, 100]"
+        class="el-pagination"
       />
   
       <!-- 弹窗：新增/编辑排班 -->
-      <el-dialog v-model="dialogVisible" :title="isAdd ? '添加排班' : '编辑排班'">
-        <el-form :model="newSchedule" label-width="80px">
-          <el-form-item label="医生">
-            <el-select v-model="newSchedule.doctor" placeholder="请选择医生">
+      <el-dialog
+        v-model="dialogVisible"
+        :title="isEdit ? '编辑排班' : '添加排班'"
+        class="schedule-dialog"
+        width="50%"
+      >
+        <el-form
+          :model="currentSchedule"
+          label-width="120px"
+          ref="scheduleForm"
+          :rules="rules"
+          @submit.native.prevent
+        >
+          <!-- 新增时显示排班ID -->
+          <el-form-item label="排班ID" v-if="!isEdit" prop="registrationId">
+            <el-input v-model="currentSchedule.registrationId" placeholder="自动生成排班ID" disabled />
+          </el-form-item>
+  
+          <el-form-item label="医生" prop="doctor">
+            <el-select v-model="currentSchedule.doctor" placeholder="请选择医生">
               <el-option
                 v-for="doctor in doctors"
                 :key="doctor.id"
@@ -80,15 +104,18 @@
               ></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="日期">
+  
+          <el-form-item label="日期" prop="date">
             <el-date-picker
-              v-model="newSchedule.date"
+              v-model="currentSchedule.date"
               type="date"
               placeholder="选择日期"
+              :disabled-date="disabledPastDate"
             ></el-date-picker>
           </el-form-item>
-          <el-form-item label="时间">
-            <el-select v-model="newSchedule.time" placeholder="请选择时间">
+  
+          <el-form-item label="时间" prop="time">
+            <el-select v-model="currentSchedule.time" placeholder="请选择时间">
               <el-option
                 v-for="time in times"
                 :key="time.id"
@@ -100,28 +127,49 @@
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="cancel">取消</el-button>
-          <el-button type="primary" @click="ensure">确定</el-button>
+          <el-button type="primary" @click="saveSchedule">确认</el-button>
         </div>
       </el-dialog>
     </div>
   </template>
   
   <script setup>
-  import { ref, computed } from 'vue';
+  import { ref, reactive, computed, onMounted } from 'vue';
+  import { ElMessage, ElMessageBox } from 'element-plus';
+  import dayjs from 'dayjs';
   
-  // 模拟数据
+  // 表单验证规则
+  const rules = {
+    registrationId: [
+      { required: true, message: '请输入排班ID', trigger: 'blur' }
+    ],
+    doctor: [
+      { required: true, message: '请选择医生', trigger: 'change' }
+    ],
+    date: [
+      { required: true, message: '请选择日期', trigger: 'change' }
+    ],
+    time: [
+      { required: true, message: '请选择时间', trigger: 'change' }
+    ]
+  };
+  
+  // 模拟医生排班数据
   const schedules = ref([
-    { doctor: '张三', date: '2024-01-01', time: '白班', id: 1 },
-    { doctor: '李四', date: '2024-01-02', time: '夜班', id: 2 },
-    { doctor: '王五', date: '2024-01-02', time: '上午班', id: 3 },
+    { id: 1, registrationId: 'S001', doctor: '张三', date: new Date('2024-01-01'), time: '白班' },
+    { id: 2, registrationId: 'S002', doctor: '李四', date: new Date('2024-01-02'), time: '夜班' },
+    { id: 3, registrationId: 'S003', doctor: '王五', date: new Date('2024-01-02'), time: '上午班' },
   ]);
   
+  // 模拟医生数据
   const doctors = ref([
     { id: 1, name: '张三' },
     { id: 2, name: '李四' },
     { id: 3, name: '王五' },
+    // 你可以添加更多医生
   ]);
   
+  // 模拟时间段数据
   const times = ref([
     { time: '上午班', id: 1 },
     { time: '下午班', id: 2 },
@@ -129,57 +177,108 @@
     { time: '夜班', id: 4 },
   ]);
   
+  // 搜索框输入数据
   const searchQuery = ref('');
   const hoveredRow = ref(null);
+  const selectedSchedules = ref([]);
   
   // 分页数据
-  const paginationData = ref({
+  const paginationData = reactive({
     pageNumber: 1,
     pageSize: 10,
   });
   
-  const selectedSchedules = ref([]);
+  // 当前操作的排班
+  const currentSchedule = ref({ registrationId: '', doctor: '', date: null, time: '', id: null });
   const dialogVisible = ref(false);
-  const newSchedule = ref({ doctor: '', date: '', time: '', id: null });
-  const isAdd = ref(true);
+  const isEdit = ref(false);
   
-  // 计算过滤后的排班数据
+  // 表单引用
+  const scheduleForm = ref(null);
+  
+  // 计算过滤后的排班列表
   const filteredSchedules = computed(() => {
-    return schedules.value.filter((schedule) =>
-      schedule.doctor.includes(searchQuery.value.trim())
+    const query = searchQuery.value.trim().toLowerCase();
+    if (!query) return schedules.value;
+    return schedules.value.filter(schedule =>
+      schedule.doctor.toLowerCase().includes(query) ||
+      schedule.registrationId.toLowerCase().includes(query)
     );
   });
   
-  // 计算分页后的排班数据
+  // 计算分页后的排班列表
   const paginatedSchedules = computed(() => {
-    const start = (paginationData.value.pageNumber - 1) * paginationData.value.pageSize;
-    const end = start + paginationData.value.pageSize;
+    const start = (paginationData.pageNumber - 1) * paginationData.pageSize;
+    const end = start + paginationData.pageSize;
     return filteredSchedules.value.slice(start, end);
   });
   
-  // 添加排班对话框
+  // 搜索排班
+  const searchSchedule = () => {
+    paginationData.pageNumber = 1; // 重置到第一页
+    ElMessage({
+      message: `搜索医生或排班ID: ${searchQuery.value}`,
+      type: 'info',
+    });
+  };
+  
+  // 打开新增排班对话框
   const showAddDialog = () => {
-    newSchedule.value = { doctor: '', date: '', time: '', id: null };
-    isAdd.value = true;
+    isEdit.value = false;
+    currentSchedule.value = { registrationId: '', doctor: '', date: null, time: '', id: null };
+    dialogVisible.value = true;
+  };
+  
+  // 打开编辑排班对话框
+  const editSchedule = (schedule) => {
+    isEdit.value = true;
+    // 深拷贝排班信息，确保编辑时不直接修改原数据
+    currentSchedule.value = { 
+      ...schedule, 
+      date: new Date(schedule.date) 
+    };
     dialogVisible.value = true;
   };
   
   // 保存排班
-  const ensure = () => {
-    if (!formValid(newSchedule.value)) {
-      console.log('表单填写不完整！');
-      return;
-    }
-    newSchedule.value.date = formatDate(newSchedule.value.date); // 格式化日期
-    if (isAdd.value) {
-      schedules.value.push({ ...newSchedule.value, id: Date.now() });
-    } else {
-      const index = schedules.value.findIndex((schedule) => schedule.id === newSchedule.value.id);
-      if (index !== -1) {
-        schedules.value[index] = { ...newSchedule.value }; // 更新排班信息
+  const saveSchedule = () => {
+    scheduleForm.value.validate((valid) => {
+      if (valid) {
+        if (isEdit.value) {
+          const index = schedules.value.findIndex(s => s.id === currentSchedule.value.id);
+          if (index !== -1) {
+            schedules.value[index] = { 
+              ...currentSchedule.value, 
+              date: new Date(currentSchedule.value.date) 
+            };
+            ElMessage({
+              message: '排班信息已更新',
+              type: 'success',
+            });
+          }
+        } else {
+          // 自动生成排班ID
+          const newIdNumber = parseInt(schedules.value[schedules.value.length - 1]?.registrationId.slice(1) || '0') + 1;
+          currentSchedule.value.registrationId = `S${newIdNumber.toString().padStart(3, '0')}`;
+          currentSchedule.value.id = Date.now(); // 使用时间戳作为唯一ID
+          schedules.value.push({ 
+            ...currentSchedule.value, 
+            date: new Date(currentSchedule.value.date) 
+          });
+          ElMessage({
+            message: '新增排班成功',
+            type: 'success',
+          });
+        }
+        dialogVisible.value = false;
+      } else {
+        ElMessage({
+          message: '请填写所有必填项',
+          type: 'warning',
+        });
+        return false;
       }
-    }
-    dialogVisible.value = false;
+    });
   };
   
   // 取消排班对话框
@@ -187,53 +286,60 @@
     dialogVisible.value = false;
   };
   
-  // 编辑排班
-  const editSchedule = (schedule) => {
-    newSchedule.value = { ...schedule };
-    isAdd.value = false;
-    dialogVisible.value = true;
-  };
-  
   // 删除排班
   const deleteSchedule = (id) => {
-    const index = schedules.value.findIndex((schedule) => schedule.id === id);
-    if (index !== -1) {
-      schedules.value.splice(index, 1);
-    }
-  };
-  
-  // 格式化日期为 "yyyy-MM-dd"
-  const formatDate = (date) => {
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-  
-  // 验证表单是否完整
-  const formValid = (form) => {
-    return form.doctor && form.date && form.time;
-  };
-  
-  // 搜索排班
-  const searchSchedule = () => {
-    console.log('搜索医生:', searchQuery.value);
+    ElMessageBox.confirm(
+      '确定删除该排班吗？',
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    ).then(() => {
+      const index = schedules.value.findIndex(schedule => schedule.id === id);
+      if (index !== -1) {
+        schedules.value.splice(index, 1);
+        ElMessage({
+          message: '排班已删除',
+          type: 'success',
+        });
+      }
+    }).catch(() => {
+      // 用户取消删除
+    });
   };
   
   // 分页页码变化
   const handlePageChange = (page) => {
-    paginationData.value.pageNumber = page;
+    paginationData.pageNumber = page;
   };
   
   // 分页每页条数变化
   const handleSizeChange = (size) => {
-    paginationData.value.pageSize = size;
+    paginationData.pageSize = size;
   };
+  
+  // 格式化日期显示
+  const formatDate = (date) => {
+    return dayjs(date).format("YYYY-MM-DD");
+  };
+  
+  // 禁止选择过去的日期
+  const disabledPastDate = (time) => {
+    return time && time < dayjs().startOf('day').toDate();
+  };
+  
+  // 在组件挂载时加载排班数据（如果从API获取数据，可以在这里调用API）
+  onMounted(() => {
+    // 这里使用本地数据模拟
+    // 如果有API，替换此部分
+  });
   </script>
   
   <style scoped>
   .doctor-schedule {
+    width: 100%;
     padding: 20px;
     background-color: #f7f7f7;
   }
@@ -304,13 +410,18 @@
     color: #333;
   }
   
+  table td {
+    color: #666;
+  }
+  
   .schedule-row {
-    transition: background-color 0.3s, box-shadow 0.3s;
+    transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
   }
   
   .schedule-row:hover {
     background-color: #f0f9ff;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
   }
   
   .dialog-footer {
@@ -318,13 +429,25 @@
   }
   
   .action-btn {
-    transition: transform 0.2s ease, background-color 0.3s ease;
+    transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
   }
   
-  .action-btn:hover {
-    transform: scale(1.1);
+  /* 编辑按钮样式 - 镂空蓝色 */
+  .edit-btn {
+    background-color: transparent;
+    color: #409eff;
+    border: 1px solid #409eff;
+    margin-right: 10px;
   }
   
+  .edit-btn:hover {
+    background-color: #e6f7ff;
+    border-color: #73d13d;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* 删除按钮样式 - 红色背景 */
   .delete-btn {
     background-color: #ff4d4f;
     color: white;
@@ -333,6 +456,61 @@
   }
   
   .delete-btn:hover {
+    background-color: #d9363e;
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* 分页样式 */
+  .el-pagination {
+    margin-top: 20px;
+  }
+  
+  /* 弹窗样式，与其他管理页面一致 */
+  .schedule-dialog .el-dialog__header {
+    background-color: #409eff;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .schedule-dialog .el-dialog__body {
+    padding: 20px;
+  }
+  
+  .schedule-dialog .el-form-item {
+    margin-bottom: 15px;
+  }
+  
+  /* 弹窗底部按钮样式 */
+  .dialog-footer .el-button {
+    margin-left: 10px;
+  }
+  
+  /* 与用户界面保持一致的交互动效 */
+  .el-button {
+    border-radius: 4px;
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+  
+  .el-button.primary {
+    background-color: #409eff;
+    color: white;
+    border: none;
+  }
+  
+  .el-button.primary:hover {
+    background-color: #66b1ff;
+  }
+  
+  .el-button.danger {
+    background-color: #ff4d4f;
+    color: white;
+    border: none;
+  }
+  
+  .el-button.danger:hover {
     background-color: #d9363e;
   }
   </style>

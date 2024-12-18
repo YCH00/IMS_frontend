@@ -5,7 +5,7 @@
 
         <!-- 搜索框 -->
         <div class="search-bar">
-            <input type="text" placeholder="搜索项目ID或名称" v-model="searchQuery" />
+            <input type="text" placeholder="搜索项目名称" v-model="searchQuery" />
             <button class="hover-btn" @click="searchTests">搜索</button>
             <button class="hover-btn" @click="openAddTestDialog">新增检查项目</button>
         </div>
@@ -25,7 +25,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="test in paginatedTests" :key="test.id" class="test-row" @mouseover="hoveredRow = test.id"
+                <tr v-for="test in tableData.list" :key="test.id" class="test-row" @mouseover="hoveredRow = test.id"
                     @mouseleave="hoveredRow = null">
                     <td><input type="checkbox" v-model="selectedTests" :value="test.id" /></td>
                     <td>{{ test.id }}</td>
@@ -48,15 +48,12 @@
 
         <!-- 分页组件 -->
         <el-pagination @current-change="handlePageChange" @size-change="handleSizeChange"
-            :current-page="paginationData.pageNumber" :page-size="paginationData.pageSize" :total="filteredTests.length"
+            :current-page="paginationData.pageNumber" :page-size="paginationData.pageSize" :total="tableData.total"
             layout="prev, pager, next, sizes, total" :page-sizes="[10, 20, 50, 100]" />
 
         <!-- 弹窗：新增/编辑检查项目 -->
         <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑检查项目' : '新增检查项目'">
-            <el-form :model="currentTest" label-width="80px">
-                <el-form-item label="项目ID">
-                    <el-input v-model="currentTest.id" :disabled=true placeholder="自动生成项目ID" />
-                </el-form-item>
+            <el-form :model="currentTest" label-width="120px" ref="testForm" :rules="rules" @submit.native.prevent>
                 <el-form-item label="项目名称">
                     <el-input v-model="currentTest.name" placeholder="请输入检查项目名称" />
                 </el-form-item>
@@ -87,6 +84,30 @@ import { reactive, onMounted } from 'vue'
 import { getAllExam, alterExam, delExam, addExam } from "../../../api/index.js"; // 这里需要你的接口
 import { ElNotification } from 'element-plus';
 
+// 表单验证规则
+const rules = {
+    id: [
+        { required: false, message: '请输入项目ID', trigger: 'blur' }
+    ],
+    name: [
+        { required: true, message: '请输入检查项目名称', trigger: 'blur' }
+    ],
+    price: [
+        { required: true, message: '请输入价格', trigger: 'blur' },
+        { type: 'number', message: '价格必须为数字', trigger: 'blur' },
+    ],
+    isSpecial: [
+        { required: true, message: '请选择是否有特殊检查', trigger: 'change' }
+    ],
+    num: [
+        { required: true, message: '请输入库存数量', trigger: 'blur' },
+        { type: 'number', message: '库存数量必须为数字', trigger: 'blur' },
+    ],
+    address: [
+        { required: true, message: '请输入检查的地址', trigger: 'blur' }
+    ]
+};
+
 
 // 分页数据
 const paginationData = ref({
@@ -101,8 +122,12 @@ const tableData = reactive({
 })
 
 // 加载科室列表
-const loadExams = () => {
-    getAllExam(paginationData.value).then(({ data }) => {
+const loadData = () => {
+    const params = {
+        ...paginationData.value, // 分页数据
+        name: searchQuery.value
+    };
+    getAllExam(params).then(({ data }) => {
         const { total, list } = data.data
         tableData.list = list;
         tableData.total = total;
@@ -110,49 +135,29 @@ const loadExams = () => {
 };
 
 onMounted(() => {
-    loadExams();
+    loadData();
 })
 
-
-// // 模拟检查项目数据
-// const tests = ref([
-//     { id: 'T001', name: 'CT扫描', price: '500.0', isSpecial: true, number: 50 },
-//     { id: 'T002', name: 'X光检查', price: '150.0', isSpecial: false, number: 200 },
-//     { id: 'T003', name: 'MRI检查', price: '1200.0', isSpecial: true, number: 30 },
-//     { id: 'T004', name: '血液检查', price: '100.0', isSpecial: false, number: 500 },
-//     { id: 'T005', name: '超声波检查', price: '300.0', isSpecial: false, number: 150 },
-//     { id: 'T006', name: '心电图', price: '200.0', isSpecial: false, number: 100 },
-//     { id: 'T007', name: '胃镜检查', price: '800.0', isSpecial: true, number: 20 },
-//     { id: 'T008', name: '肺功能测试', price: '350.0', isSpecial: false, number: 80 },
-// ]);
 
 // 搜索框输入数据
 const searchQuery = ref('');
 const hoveredRow = ref(null);
 const selectedTests = ref([]);
-
-// 过滤后的检查项目列表
-const filteredTests = computed(() => {
-    return tableData.list.filter(test =>
-        test.id.includes(searchQuery.value.trim()) || test.name.includes(searchQuery.value.trim())
-    );
-});
+// 表单引用
+const testForm = ref(null);
 
 // 当前操作的检查项目
 const currentTest = ref({ id: '', name: '', price: '', isSpecial: false, number: '', address: '' });
 const dialogVisible = ref(false);
 const isEdit = ref(false);
 
-// 计算分页后的检查项目列表
-const paginatedTests = computed(() => {
-    const start = (paginationData.value.pageNumber - 1) * paginationData.value.pageSize;
-    const end = start + paginationData.value.pageSize;
-    return filteredTests.value.slice(start, end);
-});
-
 // 搜索功能
 const searchTests = () => {
-    console.log('搜索查询:', searchQuery.value);
+    ElMessage({
+        message: `搜索检查项目: ${searchQuery.value}`,
+        type: 'info',
+    });
+    loadData();
 };
 
 // 打开新增检查项目弹窗
@@ -169,79 +174,98 @@ const openEditDialog = (test) => {
     dialogVisible.value = true;
 };
 
-// 保存检查项目
+// 保存药品信息
 const saveTest = () => {
-    const { id, ...data } = currentTest.value;
-    if (isEdit.value) { // 修改
-        alterExam(data, id).then((res) => {
-            if (res.data.data.success) {
-                // 编辑成功弹窗
-                ElNotification({
-                    title: '编辑成功',
-                    message: '编辑成功',
-                    type: 'success',  // 'success', 'warning', 'info', 'error'
-                    duration: 1500,  // 1.5秒后自动关闭
+    drugForm.value.validate((valid) => {
+        if (valid) {
+            const { id, ...data } = currentTest.value;
+            if (isEdit.value) { // 修改
+                alterExam(data, id).then((res) => {
+                    if (res.data.data.success) {
+                        // 编辑成功弹窗
+                        ElNotification({
+                            title: '编辑成功',
+                            message: '编辑成功',
+                            type: 'success',  // 'success', 'warning', 'info', 'error'
+                            duration: 1500,  // 1.5秒后自动关闭
+                        });
+                        loadData();
+                    } else {
+                        // 编辑失败弹窗
+                        ElNotification({
+                            title: '编辑失败',
+                            message: '编辑失败',
+                            type: 'error',  // 'success', 'warning', 'info', 'error'
+                            duration: 1500,  // 1.5秒后自动关闭
+                        });
+                    }
+                })
+            } else {  // 添加
+                addExam(data).then((res) => {
+                    if (res.data.data.success) {
+                        // 添加成功弹窗
+                        ElNotification({
+                            title: '添加成功',
+                            message: '添加成功',
+                            type: 'success',  // 'success', 'warning', 'info', 'error'
+                            duration: 1500,  // 1.5秒后自动关闭
+                        });
+                        loadData();
+                    } else {
+                        // 添加失败弹窗
+                        ElNotification({
+                            title: '添加失败',
+                            message: '添加失败',
+                            type: 'error',  // 'success', 'warning', 'info', 'error'
+                            duration: 1500,  // 1.5秒后自动关闭
+                        });
+                    }
                 });
-                loadDepts();
             }
-            else {
-                // 编辑失败弹窗
-                ElNotification({
-                    title: '编辑失败',
-                    message: '编辑失败',
-                    type: 'error',  // 'success', 'warning', 'info', 'error'
-                    duration: 1500,  // 1.5秒后自动关闭
-                });
-            }
-        });
-    } else {  // 添加
-        addExam(data).then((res) => {
-            if (res.data.data.success) {
-                // 添加成功弹窗
-                ElNotification({
-                    title: '添加成功',
-                    message: '添加成功',
-                    type: 'success',  // 'success', 'warning', 'info', 'error'
-                    duration: 1500,  // 1.5秒后自动关闭
-                });
-                loadDepts();
-            }
-            else {
-                // 添加失败弹窗
-                ElNotification({
-                    title: '添加失败',
-                    message: '添加失败',
-                    type: 'error',  // 'success', 'warning', 'info', 'error'
-                    duration: 1500,  // 1.5秒后自动关闭
-                });
-            }
-        });
-    }
-    dialogVisible.value = false;
+            dialogVisible.value = false;
+        } else {
+            ElMessage({
+                message: '请填写所有必填项',
+                type: 'warning',
+            });
+
+        }
+    });
 };
 
 // 删除检查项目
 const deleteTest = (id) => {
-    delExam(id).then((res) => {
-        if (res.data.data.success) {
-            // 删除失败弹窗
-            ElNotification({
-                title: '删除成功',
-                message: '删除成功',
-                type: 'success',  // 'success', 'warning', 'info', 'error'
-                duration: 1500,  // 3秒后自动关闭
-            });
-            loadExams();
+    ElMessageBox.confirm(
+        '确定删除该药品吗？',
+        '提示',
+        {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
         }
-        else {
-            // 删除失败弹窗
-            ElNotification({
-                title: '删除失败',
-                message: '删除失败',
-                type: 'error',  // 'success', 'warning', 'info', 'error'
-                duration: 1500,  // 3秒后自动关闭
-            });
-        }
+    ).then(() => {
+        delExam(id).then((res) => {
+            if (res.data.data.success) {
+                // 删除失败弹窗
+                ElNotification({
+                    title: '删除成功',
+                    message: '删除成功',
+                    type: 'success',  // 'success', 'warning', 'info', 'error'
+                    duration: 1500,  // 1.5秒后自动关闭
+                });
+                loadData();
+            } else {
+                // 删除失败弹窗
+                ElNotification({
+                    title: '删除失败',
+                    message: '删除失败',
+                    type: 'error',  // 'success', 'warning', 'info', 'error'
+                    duration: 1500,  // 1.5秒后自动关闭
+                });
+            }
+        });
+    }).catch(() => {
+        // 用户取消删除
     });
 };
 
@@ -257,107 +281,181 @@ const handleSizeChange = (size) => {
 
 </script>
 
+
 <style scoped>
 .admin-tests-management {
-    width: 100%;
-    padding: 20px;
-    background-color: #f7f7f7;
+  width: 100%;
+  padding: 20px;
+  background-color: #f7f7f7;
 }
 
 .header {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #333;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
 }
 
 .search-bar {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .search-bar input {
-    width: 250px;
-    padding: 8px 12px;
-    font-size: 14px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-right: 10px;
+  width: 250px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
 }
 
 .search-bar button,
 .hover-btn {
-    padding: 8px 16px;
-    font-size: 14px;
-    background-color: #409eff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 8px 16px;
+  font-size: 14px;
+  background-color: #409eff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.search-bar button+.hover-btn {
-    margin-left: 10px;
+/* 按钮之间的间隔 */
+.search-bar button + .hover-btn {
+  margin-left: 10px; /* 增加间距 */
 }
 
 .hover-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-    background-color: white;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 table th,
 table td {
-    padding: 12px;
-    text-align: center;
-    font-size: 14px;
-    border-bottom: 1px solid #f2f2f2;
+  padding: 12px;
+  text-align: center;
+  font-size: 14px;
+  border-bottom: 1px solid #f2f2f2;
 }
 
 table th {
-    background-color: #f5f5f5;
-    color: #333;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+table td {
+  color: #666;
 }
 
 .test-row {
-    transition: background-color 0.3s, box-shadow 0.3s;
+  transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
 }
 
 .test-row:hover {
-    background-color: #f0f9ff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: #f0f9ff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02);
 }
 
 .dialog-footer {
-    text-align: right;
+  text-align: right;
 }
 
 .action-btn {
-    transition: transform 0.2s ease, background-color 0.3s ease;
+  transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.action-btn:hover {
-    transform: scale(1.1);
+/* 编辑按钮样式 - 镂空蓝色 */
+.edit-btn {
+  background-color: transparent;
+  color: #409eff;
+  border: 1px solid #409eff;
+  margin-right: 10px;
 }
 
+.edit-btn:hover {
+  background-color: #e6f7ff;
+  border-color: #73d13d;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 删除按钮样式 - 红色背景 */
 .delete-btn {
-    background-color: #ff4d4f;
-    color: white;
-    border: none;
-    border-radius: 4px;
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 4px;
 }
 
 .delete-btn:hover {
-    background-color: #d9363e;
+  background-color: #d9363e;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 分页样式 */
+.el-pagination {
+  margin-top: 20px;
+}
+
+/* 弹窗样式，与用户模板一致 */
+.test-dialog .el-dialog__header {
+  background-color: #409eff;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.test-dialog .el-dialog__body {
+  padding: 20px;
+}
+
+.test-dialog .el-form-item {
+  margin-bottom: 15px;
+}
+
+/* 弹窗底部按钮样式 */
+.dialog-footer .el-button {
+  margin-left: 10px;
+}
+
+/* 与用户界面保持一致的交互动效 */
+.el-button {
+  border-radius: 4px;
+  font-size: 14px;
+  padding: 6px 12px;
+}
+
+.el-button.primary {
+  background-color: #409eff;
+  color: white;
+  border: none;
+}
+
+.el-button.primary:hover {
+  background-color: #66b1ff;
+}
+
+.el-button.danger {
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+}
+
+.el-button.danger:hover {
+  background-color: #d9363e;
 }
 </style>
