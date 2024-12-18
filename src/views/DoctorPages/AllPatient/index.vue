@@ -56,7 +56,7 @@
       />
   
       <!-- 查看病例弹窗 -->
-      <el-dialog v-model="viewDialogVisible" width="70%" title="病例信息" class="view-dialog" :top="'20px'">
+      <el-dialog v-model="viewDialogVisible" width="70%" title="病例信息" class="view-dialog" :top="'10px'">
         <div class="visit-interface">
           <!-- 患者信息模块 -->
           <div class="module" @mouseover="hover = true" @mouseleave="hover = false">
@@ -66,6 +66,14 @@
             <p>年龄：<span>{{ currentPatient.age }}</span></p>
             <p>手机号：<span>{{ currentPatient.phone }}</span></p>
             <p>就诊时间：<span>{{ formatDate(currentPatient.visitTime) }}</span></p>
+          </div>
+  
+          <!-- 病历标题模块 -->
+          <div class="module" @mouseover="hover = true" @mouseleave="hover = false">
+            <h3>病例标题</h3>
+            <div class="input-field read-only-field">
+              {{ currentPatient.medicalTitle || '暂无病例标题' }}
+            </div>
           </div>
   
           <!-- 病历模块 -->
@@ -128,7 +136,7 @@
   <script setup>
   import { ref, computed } from 'vue';
   
-  // 患者数据（增加了更多示例数据，并包含药方信息）
+  // 患者数据（增加了病例标题字段）
   const patients = ref([
     {
       id: '001',
@@ -137,6 +145,7 @@
       age: 35,
       phone: '13800138000',
       visitTime: new Date('2024-12-06 09:00'),
+      medicalTitle: '急性胃肠炎',
       medicalRecord: '张三的病历信息...',
       doctorAdvice: '建议多休息，按时服药。',
       prescriptions: [
@@ -151,84 +160,92 @@
       age: 28,
       phone: '13800138001',
       visitTime: new Date('2024-12-06 10:00'),
+      medicalTitle: '慢性支气管炎',
       medicalRecord: '李四的病历信息...',
       doctorAdvice: '建议进行进一步检查。',
       prescriptions: [
         { name: '阿莫西林', quantity: 3, price: '10.00', usage: '口服', frequency: '每日三次', days: 7, notes: '饭后服用' }
       ]
     },
+    
     {
-      id: '003',
-      name: '王五',
-      gender: '男',
-      age: 50,
-      phone: '13800138002',
-      visitTime: new Date('2024-12-07 08:30'),
-      medicalRecord: '王五的病历信息...',
-      doctorAdvice: '建议调整饮食习惯。',
-      prescriptions: []
-    },
-    {
-      id: '004',
-      name: '赵六',
-      gender: '女',
-      age: 40,
-      phone: '13800138003',
-      visitTime: new Date('2024-12-07 11:00'),
-      medicalRecord: '赵六的病历信息...',
-      doctorAdvice: '建议定期体检。',
-      prescriptions: [
-        { name: '银诺露', quantity: 1, price: '13.00', usage: '口服', frequency: '每日一次', days: 10, notes: '空腹服用' }
-      ]
-    },
-    {
-      id: '005',
-      name: '孙七',
-      gender: '男',
-      age: 60,
-      phone: '13800138004',
-      visitTime: new Date('2024-12-08 09:30'),
-      medicalRecord: '孙七的病历信息...',
-      doctorAdvice: '建议服用降压药。',
-      prescriptions: [
-        { name: '阿莫西林', quantity: 2, price: '10.00', usage: '口服', frequency: '每日两次', days: 5, notes: '饭前服用' }
-      ]
-    },
-    {
-      id: '006',
-      name: '周八',
-      gender: '女',
-      age: 32,
-      phone: '13800138005',
-      visitTime: new Date('2024-12-08 10:45'),
-      medicalRecord: '周八的病历信息...',
-      doctorAdvice: '建议增加锻炼。',
-      prescriptions: []
-    },
-    {
-      id: '007',
-      name: '吴九',
-      gender: '男',
-      age: 45,
-      phone: '13800138006',
-      visitTime: new Date('2024-12-09 08:15'),
-      medicalRecord: '吴九的病历信息...',
-      doctorAdvice: '建议减少工作压力。',
-      prescriptions: [
-        { name: '感冒灵', quantity: 1, price: '8.00', usage: '口服', frequency: '每日三次', days: 4, notes: '多喝水' }
-      ]
-    },
-    {
-      id: '008',
-      name: '郑十',
-      gender: '女',
-      age: 29,
-      phone: '13800138007',
-      visitTime: new Date('2024-12-09 11:30'),
-      medicalRecord: '郑十的病历信息...',
-      doctorAdvice: '建议保持良好心态。',
-      prescriptions: []
-    }
+        id: '003',
+        name: '王五',
+        gender: '男',
+        age: 50,
+        phone: '13800138002',
+        visitTime: new Date('2024-12-07 08:30'),
+        medicalTitle: '肠胃炎',
+        medicalRecord: '王五的病历信息...',
+        doctorAdvice: '建议调整饮食习惯。',
+        prescriptions: []
+      },
+      {
+        id: '004',
+        name: '赵六',
+        gender: '女',
+        age: 40,
+        phone: '13800138003',
+        visitTime: new Date('2024-12-07 11:00'),
+        medicalTitle: '癌症',
+        medicalRecord: '赵六的病历信息...',
+        doctorAdvice: '建议定期体检。',
+        prescriptions: [
+          { name: '银诺露', quantity: 1, price: '13.00', usage: '口服', frequency: '每日一次', days: 10, notes: '空腹服用' }
+        ]
+      },
+      {
+        id: '005',
+        name: '孙七',
+        gender: '男',
+        age: 60,
+        phone: '13800138004',
+        visitTime: new Date('2024-12-08 09:30'),
+        medicalTitle: '高血压',
+        medicalRecord: '孙七的病历信息...',
+        doctorAdvice: '建议服用降压药。',
+        prescriptions: [
+          { name: '阿莫西林', quantity: 2, price: '10.00', usage: '口服', frequency: '每日两次', days: 5, notes: '饭前服用' }
+        ]
+      },
+      {
+        id: '006',
+        name: '周八',
+        gender: '女',
+        age: 32,
+        phone: '13800138005',
+        visitTime: new Date('2024-12-08 10:45'),
+        medicalTitle: '骨质疏松',
+        medicalRecord: '周八的病历信息...',
+        doctorAdvice: '建议增加锻炼。',
+        prescriptions: []
+      },
+      {
+        id: '007',
+        name: '吴九',
+        gender: '男',
+        age: 45,
+        phone: '13800138006',
+        visitTime: new Date('2024-12-09 08:15'),
+        medicalTitle: '吃饱了撑的',
+        medicalRecord: '吴九的病历信息...',
+        doctorAdvice: '建议减少工作压力。',
+        prescriptions: [
+          { name: '感冒灵', quantity: 1, price: '8.00', usage: '口服', frequency: '每日三次', days: 4, notes: '多喝水' }
+        ]
+      },
+      {
+        id: '008',
+        name: '郑十',
+        gender: '女',
+        age: 29,
+        phone: '13800138007',
+        visitTime: new Date('2024-12-09 11:30'),
+        medicalTitle: '抑郁症',
+        medicalRecord: '郑十的病历信息...',
+        doctorAdvice: '建议保持良好心态。',
+        prescriptions: []
+      }
   ]);
   
   const searchQuery = ref('');
@@ -290,242 +307,242 @@
   };
   </script>
   
-  <style scoped>
-  .historical-patient-management {
-    width: 100%;
-    padding: 20px;
-    background-color: #f7f7f7;
-  }
-  
-  .header {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #333;
-  }
-  
-  .search-bar {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .search-bar input {
-    width: 250px;
-    padding: 8px 12px;
-    font-size: 14px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-right: 10px;
-  }
-  
-  .search-bar button,
-  .hover-btn {
-    padding: 8px 16px;
-    font-size: 14px;
-    background-color: #409eff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  .search-bar button + .hover-btn {
-    margin-left: 10px;
-  }
-  
-  .hover-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-    background-color: white;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  table th,
-  table td {
-    padding: 12px;
-    text-align: center;
-    font-size: 14px;
-    border-bottom: 1px solid #f2f2f2;
-  }
-  
-  table th {
-    background-color: #f5f5f5;
-    color: #333;
-  }
-  
-  .patient-row {
-    transition: background-color 0.3s, box-shadow 0.3s;
-  }
-  
-  .patient-row:hover {
-    background-color: #f0f9ff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .action-btn {
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-  }
-  
-  .view-btn {
-    background-color: transparent;
-    color: #409eff;
-    border: 1px solid #409eff;
-    margin-right: 10px;
-  }
-  
-  .view-btn:hover {
-    background-color: #e6f7ff;
-    border-color: #73d13d;
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  }
-  
-  .el-pagination {
-    margin-top: 20px;
-  }
-  
-  /* 查看病例弹窗样式 */
-  .view-dialog .el-dialog__header {
-    background-color: #409eff;
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-  }
-  
-  .view-dialog .el-dialog__body {
-    padding: 20px;
-  }
-  
-  .view-dialog .visit-interface {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  /* 模块样式 */
-  .module {
-    margin-bottom: 20px;
-    padding: 20px;
-    border-radius: 6px;
-    background-color: #f9f9f9;
-    transition: transform 0.3s ease;
-  }
-  
-  .module:hover {
-    transform: scale(1.02);
-    background-color: #f0faff;
-  }
-  
-  h2 {
-    color: #333;
-    font-size: 20px;
-    margin-bottom: 10px;
-  }
-  
-  h3 {
-    color: #409eff;
-    font-size: 16px;
-    margin-bottom: 10px;
-  }
-  
-  .input-field {
-    width: 100%;
-    padding: 10px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    transition: border-color 0.3s;
-  }
-  
-  .input-field:focus {
-    border-color: #409eff;
-  }
-  
-  /* 只读字段样式 */
-  .read-only-field {
-    padding: 10px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    background-color: #f5f5f5;
-    color: #666;
-  }
-  
-  /* 动作按钮样式 */
-  .actions {
-    display: flex;
-    justify-content: flex-end;
-  }
-  
-  .p-button-secondary,
-  .p-button-success {
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  .p-button-secondary {
-    background-color: #f0f0f0;
-    color: #333;
-    margin-right: 10px;
-    border: none;
-  }
-  
-  .p-button-secondary:hover {
-    background-color: #e0e0e0;
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  }
-  
-  .p-button-success {
-    background-color: #4CAF50;
-    color: white;
-  }
-  
-  .p-button-success:hover {
-    background-color: #45a049;
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  }
-  
-  /* 只读字段在弹窗中保持一致 */
-  .view-dialog .read-only-field {
-    background-color: #f5f5f5;
-    color: #666;
-  }
-  
-  /* 样式保持一致 */
-  .prescription-table th,
-  .prescription-table td {
-    padding: 12px;
-    text-align: center;
-    font-size: 14px;
-    border-bottom: 1px solid #f2f2f2;
-  }
-  
-  .prescription-table th {
-    background-color: #f5f5f5;
-    color: #333;
-  }
-  
-  .no-prescriptions {
-    text-align: center;
-    color: #999;
-    font-size: 14px;
-  }
-  </style>
-  
+    <style scoped>
+    .historical-patient-management {
+      width: 100%;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
+    
+    .header {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    
+    .search-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .search-bar input {
+      width: 250px;
+      padding: 8px 12px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    
+    .search-bar button,
+    .hover-btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      background-color: #409eff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .search-bar button + .hover-btn {
+      margin-left: 10px;
+    }
+    
+    .hover-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background-color: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    table th,
+    table td {
+      padding: 12px;
+      text-align: center;
+      font-size: 14px;
+      border-bottom: 1px solid #f2f2f2;
+    }
+    
+    table th {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    
+    .patient-row {
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .patient-row:hover {
+      background-color: #f0f9ff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .view-btn {
+      background-color: transparent;
+      color: #409eff;
+      border: 1px solid #409eff;
+      margin-right: 10px;
+    }
+    
+    .view-btn:hover {
+      background-color: #e6f7ff;
+      border-color: #73d13d;
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .el-pagination {
+      margin-top: 20px;
+    }
+    
+    /* 查看病例弹窗样式 */
+    .view-dialog .el-dialog__header {
+      background-color: #409eff;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    
+    .view-dialog .el-dialog__body {
+      padding: 20px;
+    }
+    
+    .view-dialog .visit-interface {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* 模块样式 */
+    .module {
+      margin-bottom: 20px;
+      padding: 20px;
+      border-radius: 6px;
+      background-color: #f9f9f9;
+      transition: transform 0.3s ease;
+    }
+    
+    .module:hover {
+      transform: scale(1.02);
+      background-color: #f0faff;
+    }
+    
+    h2 {
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    
+    h3 {
+      color: #409eff;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    
+    .input-field {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      transition: border-color 0.3s;
+    }
+    
+    .input-field:focus {
+      border-color: #409eff;
+    }
+    
+    /* 只读字段样式 */
+    .read-only-field {
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background-color: #f5f5f5;
+      color: #666;
+    }
+    
+    /* 动作按钮样式 */
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+    
+    .p-button-secondary,
+    .p-button-success {
+      padding: 8px 16px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .p-button-secondary {
+      background-color: #f0f0f0;
+      color: #333;
+      margin-right: 10px;
+      border: none;
+    }
+    
+    .p-button-secondary:hover {
+      background-color: #e0e0e0;
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .p-button-success {
+      background-color: #4CAF50;
+      color: white;
+    }
+    
+    .p-button-success:hover {
+      background-color: #45a049;
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* 只读字段在弹窗中保持一致 */
+    .view-dialog .read-only-field {
+      background-color: #f5f5f5;
+      color: #666;
+    }
+    
+    /* 样式保持一致 */
+    .prescription-table th,
+    .prescription-table td {
+      padding: 12px;
+      text-align: center;
+      font-size: 14px;
+      border-bottom: 1px solid #f2f2f2;
+    }
+    
+    .prescription-table th {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    
+    .no-prescriptions {
+      text-align: center;
+      color: #999;
+      font-size: 14px;
+    }
+    </style>
+    

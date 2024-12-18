@@ -476,7 +476,7 @@ export default {
 .pending-tasks-card .task-item i {
     margin-right: 10px;
     font-size: 18px;
-    color: #ff9900;
+    color: #42A5F5;
 }
 
 .pending-tasks-card .task-item span {

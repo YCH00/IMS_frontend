@@ -108,6 +108,7 @@ export default {
 
     components: {
         Line,
+        Card,
     },
 
     data() {
@@ -119,8 +120,8 @@ export default {
                     {
                         label: '患者就诊人数',
                         data: [100, 120, 150, 130, 160, 170, 160, 180, 200, 190], // 假设的就诊人数数据
-                        borderColor: '#66BB6A',
-                        backgroundColor: 'rgba(102, 187, 106, 0.2)',
+                        borderColor: '#66BB6A', // 绿色边框
+                        backgroundColor: 'rgba(102, 187, 106, 0.2)', // 绿色背景
                         fill: true,
                         tension: 0.4, // 曲线的平滑度
                     },
@@ -159,7 +160,7 @@ export default {
                             text: '日期',
                         },
                         grid: {
-                            drawOnChartArea: true, // 禁止绘制网格线
+                            drawOnChartArea: true, // 绘制网格线
                         },
                     },
                     y: {
@@ -219,7 +220,8 @@ export default {
         // 更新当前时间
         const updateCurrentTime = () => {
             const now = new Date();
-            currentTime.value = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+            const formattedTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+            currentTime.value = formattedTime;
         };
 
         // 定时更新当前时间
@@ -274,7 +276,7 @@ export default {
 
 <style scoped>
 /* 样式总体布局 */
-.container {
+.doctor-home {
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -327,7 +329,7 @@ export default {
 
 .card .card-icon {
     font-size: 36px;
-    color: #66BB6A;
+    color: #66BB6A; /* 绿色 */
     margin-bottom: 10px;
 }
 
@@ -365,7 +367,6 @@ export default {
     margin: 20px;
     margin-top: 0px;    
     width: 200px;
-    height: 200px;
     /* 每个卡片的宽度 */
     background-color: #fff;
     border-radius: 10px;
@@ -386,7 +387,7 @@ export default {
 
 .data-icon {
     font-size: 30px;
-    color: #66BB6A;
+    color: #66BB6A; /* 绿色 */
 }
 
 .data-content {
@@ -483,7 +484,7 @@ export default {
 .pending-tasks-card .task-item i {
     margin-right: 10px;
     font-size: 18px;
-    color: #ff9900;
+    color: #66BB6A; /* 绿色 */
 }
 
 .pending-tasks-card .task-item span {
@@ -502,7 +503,7 @@ export default {
     bottom: -2px; /* 下划线距离文本底部的距离 */
     width: 0;
     height: 2px;
-    background-color: #42A5F5;
+    background-color: #66BB6A; /* 绿色 */
     transition: width 0.3s ease; /* 添加平滑过渡 */
 }
 
@@ -513,12 +514,12 @@ export default {
 
 /* 鼠标悬停时，文本颜色也可变更，增加交互感 */
 .pending-tasks-card .task-item:hover span {
-    color: #42A5F5;
+    color: #66BB6A; /* 绿色 */
 }
 
 /* 新增的按钮样式 */
 .add-task-btn {
-    background-color: #42A5F5;
+    background-color: #66BB6A; /* 绿色 */
     border: none;
     border-radius: 50%;
     width: 30px;
@@ -533,7 +534,7 @@ export default {
 }
 
 .add-task-btn:hover {
-    background-color: #1e88e5;
+    background-color: #43A047; /* 深绿色 */
 }
 
 /* 弹窗样式 */
@@ -589,11 +590,11 @@ export default {
     font-size: 14px;
     transition: background-color 0.3s ease;
     color: #fff;
-    background-color: #42A5F5;
+    background-color: #66BB6A; /* 绿色 */
 }
 
 .modal-btn:hover {
-    background-color: #1e88e5;
+    background-color: #43A047; /* 深绿色 */
 }
 
 .modal-btn.cancel {
@@ -614,5 +615,4 @@ export default {
         opacity: 1;
     }
 }
-
 </style>

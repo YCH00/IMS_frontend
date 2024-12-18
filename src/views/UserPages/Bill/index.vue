@@ -1,119 +1,238 @@
 <template>
-    <div class="medical-record-details">
-      <div class="header">诊断详情</div>
-      <div class="patient-info">
-        <h2>患者信息</h2>
-        <p>姓名：{{ medicalRecord.patientName }}</p>
-        <p>性别：{{ medicalRecord.gender }}</p>
-        <p>年龄：{{ medicalRecord.age }}</p>
-        <p>手机号：{{ medicalRecord.phone }}</p>
-      </div>
-      <div class="record-info">
-        <h2>病例标题</h2>
-        <p><strong>日期:</strong> {{ medicalRecord.date }}</p>
-        <p><strong>医生:</strong> {{ medicalRecord.doctorName }}</p>
-        <p><strong>诊断:</strong> {{ medicalRecord.diagnosis }}</p>
-        <p><strong>治疗建议:</strong> {{ medicalRecord.treatment }}</p>
-      </div>
-      <div class="prescription">
-        <h2>处方</h2>
-        <ul>
-          <li v-for="item in prescription" :key="item.name">
-            <strong>{{ item.name }}</strong> - 数量：{{ item.quantity }}, 单价：{{ item.price }}, 用法：{{ item.usage }}, 频次/天：{{ item.frequency }}</li>
-          </ul>
-      </div>
-      <div class="actions">
-        <button class="edit-button" @click="editRecord">编辑病例</button>
-        <button class="delete-button" @click="deleteRecord">删除病例</button>
-      </div>
+    <div class="bill-records-list">
+      <div class="header">我的账单记录</div>
+      <ul class="records-list">
+        <li v-for="record in paginatedRecords" :key="record.id" class="record-item">
+          <div class="record-info">
+            <h3>{{ record.title }}</h3>
+            <p>日期: {{ record.date }}</p>
+            <p>金额: ￥{{ record.amount.toFixed(2) }}</p>
+          </div>
+          <div class="record-actions">
+            <button 
+              v-if="!record.paid" 
+              @click="payBill(record.id)" 
+              class="pay-btn"
+              :disabled="record.paid"
+            >
+              支付
+            </button>
+            <button 
+              v-if="record.paid" 
+              class="paid-btn" 
+              disabled
+            >
+              已支付
+            </button>
+            <button @click="deleteRecord(record.id)" class="delete-btn">删除</button>
+          </div>
+        </li>
+      </ul>
+  
+      <!-- 支付成功弹窗 -->
+      <el-dialog v-model="dialogVisible" width="50%" title="支付成功" class="payment-dialog">
+        <p>支付成功！</p>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="dialogVisible = false">关闭</el-button>
+        </span>
+      </el-dialog>
+  
+      <!-- 分页组件 -->
+      <el-pagination
+        @current-change="handlePageChange"
+        @size-change="handleSizeChange"
+        :current-page="paginationData.pageNumber"
+        :page-size="paginationData.pageSize"
+        :total="filteredRecords.length"
+        layout="prev, pager, next, sizes, total"
+        :page-sizes="[5, 10, 20]"
+        class="el-pagination"
+      />
     </div>
   </template>
   
   <script setup>
-  import { ref } from 'vue';
+  import { ref, computed } from 'vue';
   
-  const medicalRecord = ref({
-    patientName: '李自瞻',
-    gender: '男',
-    age: 32,
-    phone: '13823888888',
-    date: '2024-06-01',
-    diagnosis: '感冒',
-    treatment: '休息和药物治疗',
-    doctorName: '李医生',
-    prescription: [
-      { name: '华维素胶囊', quantity: 1, price: '22.00', usage: '口服', frequency: '每天三次' },
-      { name: '银诺露', quantity: 1, price: '13.00', usage: '外用', frequency: '每天二次' }
-    ]
+  // 账单记录数据
+  const billRecords = ref([
+    { 
+      id: 1, 
+      title: '医疗费用', 
+      date: '2024/6/10', 
+      amount: 300.5, 
+      paid: false 
+    },
+    { 
+      id: 2, 
+      title: '药品费用', 
+      date: '2024/6/12', 
+      amount: 150.0, 
+      paid: false 
+    },
+    { 
+      id: 3, 
+      title: '住院费用', 
+      date: '2024/6/15', 
+      amount: 1200.0, 
+      paid: true 
+    },
+    // 更多账单数据...
+  ]);
+  
+  const dialogVisible = ref(false);
+  const paginationData = ref({
+    pageNumber: 1,
+    pageSize: 10
   });
   
-  function editRecord() {
-    // 逻辑：跳转到编辑病例界面或弹出编辑对话框
-    console.log('编辑病例', medicalRecord.value);
+  // 计算过滤后的账单记录
+  const filteredRecords = computed(() => {
+    return billRecords.value;
+  });
+  
+  // 计算分页后的记录
+  const paginatedRecords = computed(() => {
+    const start = (paginationData.value.pageNumber - 1) * paginationData.value.pageSize;
+    const end = start + paginationData.value.pageSize;
+    return filteredRecords.value.slice(start, end);
+  });
+  
+  // 支付账单
+  function payBill(id) {
+    const record = billRecords.value.find(record => record.id === id);
+    if (record) {
+      record.paid = true;
+      dialogVisible.value = true;  // 显示支付成功弹窗
+    }
   }
   
-  function deleteRecord() {
-    // 逻辑：删除病例
-    console.log('删除病例', medicalRecord.value);
+  // 删除账单
+  function deleteRecord(id) {
+    const index = billRecords.value.findIndex(record => record.id === id);
+    if (index !== -1) {
+      billRecords.value.splice(index, 1);
+    }
   }
+  
+  // 分页处理：页码变化
+  const handlePageChange = (page) => {
+    paginationData.value.pageNumber = page;
+  };
+  
+  // 分页处理：每页记录数变化
+  const handleSizeChange = (size) => {
+    paginationData.value.pageSize = size;
+  };
   </script>
   
   <style scoped>
-  .medical-record-details {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #f5f5f5;
+  .bill-records-list {
+    width: 80%;
+    margin: 20px auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 20px;
   }
   
   .header {
-    width: 100%;
-    background-color: #000;
-    color: #fff;
     text-align: center;
-    padding: 10px 0;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: transparent; /* 无色背景 */
   }
   
-  .patient-info, .record-info, .prescription {
-    margin: 10px 0;
-    padding: 10px;
-    background-color: #fff;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 100%; /* 确保块块占据整个宽度 */
+  .records-list {
+    list-style: none;
+    padding: 0;
   }
   
-  .actions {
+  .record-item {
     display: flex;
     justify-content: space-between;
-    width: 100%;
-    margin-top: 20px;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, background-color 0.3s ease;
   }
   
-  .edit-button, .delete-button {
-    padding: 10px 20px;
+  .record-item:hover {
+    transform: scale(1.02);
+    background-color: #f7faff;
+  }
+  
+  .record-info h3 {
+    margin: 0;
+    color: #555;
+  }
+  
+  .record-info p {
+    margin: 5px 0;
+    color: #777;
+  }
+  
+  .record-actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .record-actions button {
+    padding: 8px 16px;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
+    font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
   }
   
-  .edit-button {
-    background-color: #4CAF50;
+  .pay-btn {
+    background-color: #409eff;
     color: white;
   }
   
-  .edit-button:hover {
-    background-color: #45a049;
+  .pay-btn:hover {
+    background-color: #66b1ff;
   }
   
-  .delete-button {
-    background-color: #f44433;
+  .paid-btn {
+    background-color: #8bc34a;
     color: white;
   }
   
-  .delete-button:hover {
-    background-color: #e53935;
+  .paid-btn:hover {
+    background-color: #a5d6a7;
+  }
+  
+  .delete-btn {
+    background-color: #f56c6c;
+    color: white;
+  }
+  
+  .delete-btn:hover {
+    background-color: #f79c42;
+  }
+  
+  .payment-dialog .el-dialog__header {
+    background-color: #409eff;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .payment-dialog .el-dialog__body {
+    padding: 20px;
+    font-size: 16px;
+  }
+  
+  .el-pagination {
+    margin-top: 20px;
+    text-align: center;
   }
   </style>
+  
