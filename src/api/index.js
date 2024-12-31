@@ -3,12 +3,21 @@ import menu from "../store/menu.js";
 
 // 用户注册
 export const register = (data) => {
-    return request.post('/register', data)
+    return request.post('/patient/register', data)
 }
 // 用户登录
 export const login = (data) => {
-    return request.post('/login', data)
+    return request.post('/patient/login', data)
 }
+// 医生登录
+export const doctorLogin = (data) => {
+    return request.post('/doctor/login', data)
+}
+// 管理员登录
+export const adminLogin = (data) => {
+    return request.post('/admin/login', data)
+}
+
 // 获取动态路由
 export const getDynamicRoutes = (roleType) => {
     const routeEndpoints = {
@@ -19,7 +28,6 @@ export const getDynamicRoutes = (roleType) => {
     const url = routeEndpoints[roleType] || routeEndpoints.user;
     return request.get(url);
 }
-
 
 // 获取所有的用户信息
 export const getAllUserInfo = (data) => {
@@ -68,7 +76,6 @@ export const updateMenu = (menuId, menuData) => {
 export const deleteMenu = (menuId) => {
     return request.delete(`/menus/${menuId}`);
 };
-
 
 //-- 科室管理页面相关接口
 export const getAllDept = (data) => {
@@ -148,7 +155,7 @@ export const addDrug = (data) => {
 
 //-- 检查项目管理页面相关接口
 export const getAllExam = (data) => {
-    return request.get('/admin/getExam', {params:data});
+    return request.get('/admin/getExam', {params: data});
 }
 
 export const alterExam = (data, exam_id) => {
@@ -165,7 +172,7 @@ export const addExam = (data) => {
 
 //-- 预约管理页面相关接口
 export const getAllAppoint = (data) => {
-    return request.get('/admin/getAppoint', {params:data});
+    return request.get('/admin/getAppoint', {params: data});
 }
 
 export const alterAppoint = (data, appoint_id) => {
@@ -177,7 +184,7 @@ export const delAppoint = (appoint_id) => {
 }
 
 export const addAppoint = (data) => {
-    return request.post('/admin/addAppoint', data);
+    return request.post('/patient/addAppoint', data);
 }
 
 //-- 管理员主页数据相关
@@ -186,12 +193,20 @@ export const getAdminData = () => {
 }
 
 //-- 医生页面中的相关接口
-export const getCurPatient = (data) => {
-    return request.get('/doctor/getCurPatient', {params:data});
+export const getCurPatient = (doctor_id, data) => {
+    return request.get(`/doctor/getCurPatient/${doctor_id}`, {params: data});
+}
+
+export const getHistoryPatient = (doctor_id, data) => {
+    return request.get(`/doctor/getHistoryPatient/${doctor_id}`, {params: data});
+}
+
+export const getPatientDetail = (patient_id) => {
+    return request.get(`/doctor/getPatientDetail/${patient_id}`);
 }
 
 export const getAllPatient = (data) => {
-    return request.get('/doctor/getAllPatient', {params:data});
+    return request.get('/doctor/getAllPatient', {params: data});
 }
 
 export const getDoctorProfile = () => {
@@ -201,6 +216,11 @@ export const getDoctorProfile = () => {
 export const alterDoctorProfile = (data) => {
     return request.put('doctor/alterProfile', data);
 }
+
+export const finishAppoint = (appoint_id, data) => {
+    return request.put(`/doctor/finishAppoint/${appoint_id}`, data);
+}
+
 
 //-- 用户页面中相关接口
 export const addPatientAppoint = () => {
@@ -212,9 +232,9 @@ export const getPatientAppoint = () => {
 }
 
 export const getMedicalRecord = (data) => {
-    return request.get('/patient/getMedicalRecord', {params:data});
+    return request.get('/patient/getMedicalRecord', {params: data});
 }
 
 export const getExamRecord = (data) => {
-    return request.get('/patient/getExamRecord', {params:data});
+    return request.get('/patient/getExamRecord', {params: data});
 }

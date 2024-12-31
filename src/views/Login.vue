@@ -8,11 +8,11 @@ import {reactive, ref} from "vue";
 import router from "../router/router";
 import {showMessage} from "../utils/message.js";
 // 后端API接口函数
-import {login} from "../api"
+import {login, doctorLogin, adminLogin} from "../api"
 
 // 定义响应式变量，用于绑定表单数据
 const login_form = reactive({
-  phone_number: "",
+  username: "",
   password: ""
 })
 const identity = ref("admin")
@@ -30,11 +30,10 @@ const gotoRegister = () => {
 
 // 校验函数：根据身份验证账号和密码长度
 const validateForm = () => {
-  if (!login_form.phone_number || !login_form.password) {
+  if (!login_form.username || !login_form.password) {
     showMessage("账号和密码不能为空", "warning");
     return false;
   }
-  // TODO: 其他校验条件
   return true;
 };
 
@@ -46,25 +45,40 @@ async function try_login(event: Event) {
     return;
   }
 
-  // 调用登录接口
-  login(login_form).then(({data}) => {
-    // 处理响应数据
+  let loginResponse;
+  switch (identity.value) {
+    case "admin":
+      loginResponse = adminLogin(login_form); // 管理员登录
+      break;
+    case "doctor":
+      loginResponse = doctorLogin(login_form); // 医生登录
+      break;
+    case "user":
+      loginResponse = login(login_form); // 用户登录
+      break;
+    default:
+      loginResponse = login(login_form); // 默认登录
+      break;
+  }
+
+  try {
+    const {data} = await loginResponse;
+
     if (data.code === "000") {
       showMessage(data.message, "success");
       const token = data.data.token;
-      const userInfo = JSON.stringify(data.data.user_info)
-      localStorage.setItem('pz_token', token)
-      localStorage.setItem('userInfo', userInfo)
-      localStorage.setItem('role', identity.value)
-      console.log(token, "登录令牌")
-      console.log(userInfo, "用户信息")
-      console.log(identity.value, "用户角色")
+      const userInfo = JSON.stringify(data.data.user_info);
+      localStorage.setItem("pz_token", token);
+      localStorage.setItem("userInfo", userInfo);
+      localStorage.setItem("role", identity.value);
       router.hasDynamicRoutes = false;
-      router.push('/home');
+      router.push("/home");
     } else {
       showMessage(data.error || "登录失败", "error");
     }
-  })
+  } catch (error) {
+    showMessage("登录请求失败，请稍后重试", "error");
+  }
 }
 
 </script>
@@ -86,8 +100,11 @@ async function try_login(event: Event) {
           <div class="login__field">
             <IftaLabel>
               <i class="pi pi-user icon"></i>
-              <InputText id="Account" class="login__input" v-model="login_form.phone_number"/>
-              <label for="Account">手机号码</label>
+              <InputText id="Account" class="login__input" v-model="login_form.username"/>
+              <label for="Account">{{
+                  identity === 'admin' ?
+                      "管理员账号" : identity === "doctor" ? "工号" : "电话号码"
+                }}</label>
             </IftaLabel>
           </div>
 
