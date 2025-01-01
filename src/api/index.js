@@ -227,8 +227,8 @@ export const addPatientAppoint = () => {
     return request.post('/patient/addAppoint');
 }
 
-export const getPatientAppoint = () => {
-    return request.get('/patient/getAppoint');
+export const getPatientAppoint = (user_id, data) => {
+    return request.get(`/patient/getAppoint/${user_id}`, {params: data});
 }
 
 export const getMedicalRecord = (data) => {
@@ -237,4 +237,12 @@ export const getMedicalRecord = (data) => {
 
 export const getExamRecord = (data) => {
     return request.get('/patient/getExamRecord', {params: data});
+}
+
+export const getPayRecord = (user_id, data) => {
+    return request.get(`/patient/getPayRecord/${user_id}`, {params: data});
+}
+
+export const finishPay = (pay_id) => {
+    return request.put(`/patient/finishPay/${pay_id}`);
 }
