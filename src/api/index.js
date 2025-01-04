@@ -214,7 +214,7 @@ export const getDoctorProfile = () => {
 }
 
 export const alterDoctorProfile = (data) => {
-    return request.put('doctor/alterProfile', data);
+    return request.put('/doctor/alterProfile', data);
 }
 
 export const finishAppoint = (appoint_id, data) => {
@@ -245,4 +245,12 @@ export const getPayRecord = (user_id, data) => {
 
 export const finishPay = (pay_id) => {
     return request.put(`/patient/finishPay/${pay_id}`);
+}
+
+export const getPatientProfile = () => {
+    return request.get('/patient/getProfile');
+}
+
+export const alterPatientProfile = (data) => {
+    return request.put('/patient/alterProfile', data);
 }
